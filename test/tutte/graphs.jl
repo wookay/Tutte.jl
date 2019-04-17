@@ -1,0 +1,44 @@
+module test_tutte_graphs
+
+using Test
+using Tutte.Graphs # Graph Edge Edges Node @nodes → ←  addedges cutedges
+
+G = Graph()
+@nodes A B C D E F
+
+@test isempty(G)
+@test G isa Graph
+
+@test (D ← C) isa Edge
+@test (C → D) == (D ← C)
+@test (A - C) == (C - A)
+@test (A - C → D) == (D ← C - A)
+@test F isa Node
+@test union(C → D, D ← C) == Edges([C → D]) == Edges([D ← C])
+@test union(C → D, D → C) == Edges([C → D, D → C]) == Edges([C → D, C ← D])
+@test union(C → D, D → E, E - F) == Edges([C → D, D → E, E - F])
+
+@nodes H
+@test H isa Node
+@test H == Node(Dict(:id => :H, :label => "H"))
+
+G = addedges(G, A - C)
+@test G.edges == Edges([A - C])
+@test G.nodes == Set([A, C])
+@test !isempty(G)
+
+G2 = addedges(G, A - C → D ← F)
+@test G.edges == Edges([A - C])
+@test G.nodes == Set([A, C])
+@test G2.edges == Edges([A - C, C → D, D ← F])
+@test G2.nodes == Set([A, C, D, F])
+
+G3 = cutedges(G2, A - C)
+@test G.edges == Edges([A - C])
+@test G.nodes == Set([A, C])
+@test G2.edges == Edges([A - C, C → D, D ← F])
+@test G2.nodes == Set([A, C, D, F])
+@test G3.edges == Edges([C → D, D ← F])
+@test G3.nodes == Set([A, C, D, F])
+
+end # module test_tutte_graphs
