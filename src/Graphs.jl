@@ -1,12 +1,13 @@
 module Graphs # Tutte.Graphs
 
+using LightGraphs: AbstractGraph, AbstractEdge
 export Graph, Edge, Edges, Node, @nodes, →, ←, addedges, cutedges
 
 struct Node
     props::Dict
 end
 
-struct Edge
+struct Edge <: AbstractEdge{Symbol}
     op
     nodes::Tuple{Node, Node}
     props::Dict
@@ -22,9 +23,7 @@ struct Edges
     end
 end
 
-import Base: -, ==, ∪, isempty, isless
-
-struct Graph
+struct Graph <: AbstractGraph{Symbol}
     nodes::Set{Node}
     edges::Edges
     props::Dict
@@ -46,6 +45,8 @@ end
 function graph_nodes(s)
     :(($(s...),) = $(map(x -> Node(Dict(:id => x, :label => String(x))), s)))
 end
+
+import Base: -, ==, ∪, isempty, isless
 
 function isempty(g::Graph)
     isempty(g.nodes) && isempty(g.edges)
