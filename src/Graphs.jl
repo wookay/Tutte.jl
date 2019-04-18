@@ -1,15 +1,20 @@
 module Graphs # Tutte.Graphs
 
 using LightGraphs: AbstractGraph, AbstractEdge
-export Graph, Edge, Edges, Node, @nodes, →, ←, addedges, cutedges
+export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, addedges, cutedges
 
 struct Node
+    id::Symbol
     props::Dict
+    function Node(; id::Symbol, props::Dict=Dict())
+        new(id, props)
+    end
 end
 
 struct Edge <: AbstractEdge{Symbol}
     op
-    nodes::Tuple{Node, Node}
+    nodes::Tuple{Any, Any}
+    backward::Bool
     props::Dict
 end
 
@@ -17,23 +22,22 @@ struct Edges
     list::Vector{Edge}
     function Edges(list::Vector{Edge})
         new(unique(list) do edge
-            e = toright(edge)
-            (e.op, e.nodes, e.props)
+            (edge.op, edge.nodes, false, edge.props)
         end)
     end
 end
 
 struct Graph <: AbstractGraph{Symbol}
-    nodes::Set{Node}
+    nodes::Set{Any}
     edges::Edges
     props::Dict
     function Graph()
-        new(Set{Node}(), Edges(Vector{Edge}()), Dict())
+        new(Set{Any}(), Edges(Vector{Edge}()), Dict())
     end
-    function Graph(nodes::Set{Node}, edges::Edges)
+    function Graph(nodes::Set{Any}, edges::Edges)
         new(nodes, edges, Dict())
     end
-    function Graph(nodes::Set{Node}, edges::Edges, props::Dict)
+    function Graph(nodes::Set{Any}, edges::Edges, props::Dict)
         new(nodes, edges, props)
     end
 end
@@ -43,10 +47,10 @@ macro nodes(args...)
 end
 
 function graph_nodes(s)
-    :(($(s...),) = $(map(x -> Node(Dict(:id => x, :label => String(x))), s)))
+    :(($(s...),) = $(map(x -> Node(; id=x), s)))
 end
 
-import Base: -, ==, ∪, isempty, isless
+import Base: ==, ∪, isempty, isless
 
 function isempty(g::Graph)
     isempty(g.nodes) && isempty(g.edges)
@@ -56,69 +60,73 @@ function isempty(edges::Edges)
     isempty(edges.list)
 end
 
-function -(a::Node, b::Node)::Edge
-    Edge(-, (a, b), Dict())
+function ⇿(a::Any, b::Any)::Edge
+    Edge(⇿, (a, b), false, Dict())
 end
 
-function →(a::Node, b::Node)::Edge
-    Edge(→, (a, b), Dict())
+function ⇿(a::Any, edge::Edge)::Edges
+    Edges([a ⇿ (edge.backward ? last : first)(edge.nodes), edge])
 end
 
-function ←(a::Node, b::Node)::Edge
-    Edge(←, (a, b), Dict())
+function ⇿(edge::Edge, b::Any)::Edges
+    Edges([edge, (edge.backward ? first : last)(edge.nodes) ⇿ b])
 end
 
-function -(edge::Edge, b::Node)::Edges
-    Edges([edge, last(edge.nodes) - b])
+function ⇿(a::Any, edges::Edges)::Edges
+    edge = first(edges.list)
+    Edges([a ⇿ (edge.backward ? last : first)(edge.nodes), edges.list...])
 end
 
-function →(edge::Edge, b::Node)::Edges
-    Edges([edge, last(edge.nodes) → b])
+function →(a::Any, b::Any)::Edge
+    Edge(→, (a, b), false, Dict())
 end
 
-function →(a::Edge, b::Edge)::Edges
-    Edges([a, last(a.nodes) → first(b.nodes), b])
+function →(a::Any, edge::Edge)::Edges
+    Edges([a → (edge.backward ? last : first)(edge.nodes), edge])
 end
 
-function ←(a::Edge, b::Edge)::Edges
-    Edges([a, last(a.nodes) ← first(b.nodes), b])
+function →(edge::Edge, b::Any)::Edges
+    Edges([edge, (edge.backward ? first : last)(edge.nodes) → b])
 end
 
-function ←(a::Node, edge::Edge)::Edges
-    Edges([a ← first(edge.nodes), edge])
+function ←(a::Any, b::Any)::Edge
+    Edge(→, (b, a), true, Dict())
 end
 
-function toright(edge::Edge)
-    if edge.op == ←
-        Edge(→, reverse(edge.nodes), edge.props)
-    else
-        edge
-    end
+function ←(a::Any, edge::Edge)::Edges
+    Edges([a ← (edge.backward ? last : first)(edge.nodes), edge])
 end
 
-function ==(l::Edge, r::Edge)
-    a, b = toright(l), toright(r)
-    if a.op == b.op == -
-        (Set(a.nodes) == Set(b.nodes)) && (a.props == b.props)
-    else
-        (a.op == b.op) && (a.nodes == b.nodes) && (a.props == b.props)
-    end
+function ←(edge::Edge, b::Any)::Edges
+    Edges([edge, (edge.backward ? first : last)(edge.nodes) ←  b])
 end
 
 function ∪(edges::Edge...)::Edges
-    Edges(Edge[toright.(edges)...])
+    Edges([edges...])
+end
+
+function ==(a::Node, b::Node)
+    idof(a) == idof(b)
+end
+
+function ==(a::Edge, b::Edge)
+    if a.op === b.op === ⇿
+        (Set(a.nodes) == Set(b.nodes)) && (a.props == b.props)
+    else
+        (a.op === b.op) && (a.nodes == b.nodes) && (a.props == b.props)
+    end
 end
 
 function ==(l::Edges, r::Edges)
     length(l.list) == length(r.list) && all(sort(l.list) .== sort(r.list))
 end
 
-function ==(l::Node, r::Node)
-    idof(l) == idof(r)
+function idof(node::Any)
+    node
 end
 
 function idof(node::Node)
-    node.props[:id]
+    node.id
 end
 
 function idof(edge::Edge)
@@ -126,7 +134,7 @@ function idof(edge::Edge)
 end
 
 function isless(l::Edge, r::Edge)
-    isless(idof(toright(l)), idof(toright(r)))
+    isless(idof(l), idof(r))
 end
 
 function isless(l::Node, r::Node)
@@ -148,17 +156,25 @@ function cutedges(g::Graph, edge::Edge)::Graph
 end
 
 function cutedges(g::Graph, edges::Edges)::Graph
-    idlist = (idof ∘ toright).(g.edges.list)
-    indices = filter(!isnothing, indexin(idlist, (idof ∘ toright).(edges.list)))
+    idlist = idof.(g.edges.list)
+    indices = filter(!isnothing, indexin(idlist, idof.(edges.list)))
     Graph(g.nodes, Edges(g.edges.list[setdiff(1:length(idlist), indices)]), g.props)
 end
 
-function allnodes(edges::Edges)::Vector{Node}
+function allnodes(edges::Edges)::Vector{Any}
     vcat(map(edge -> [edge.nodes...], edges.list)...)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", edge::Edge)
-    print(io, first(edge.nodes).props[:id], ' ', nameof(edge.op), ' ', last(edge.nodes).props[:id])
+    if (edge.op === →) && edge.backward
+        Base.show(io, mime, last(edge.nodes))
+        print(io, ' ', nameof(←), ' ')
+        Base.show(io, mime, first(edge.nodes))
+    else
+        Base.show(io, mime, first(edge.nodes))
+        print(io, ' ', nameof(edge.op), ' ')
+        Base.show(io, mime, last(edge.nodes))
+    end
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", edges::Edges)
