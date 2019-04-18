@@ -5,24 +5,19 @@ export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, addedges, cutedges
 
 struct Node
     id::Symbol
-    props::Dict
-    function Node(; id::Symbol, props::Dict=Dict())
-        new(id, props)
-    end
 end
 
 struct Edge <: AbstractEdge{Symbol}
     op
     nodes::Tuple{Any, Any}
     backward::Bool
-    props::Dict
 end
 
 struct Edges
     list::Vector{Edge}
     function Edges(list::Vector{Edge})
         new(unique(list) do edge
-            (edge.op, edge.nodes, false, edge.props)
+            (edge.op, edge.nodes, false)
         end)
     end
 end
@@ -30,15 +25,11 @@ end
 struct Graph <: AbstractGraph{Symbol}
     nodes::Set{Any}
     edges::Edges
-    props::Dict
     function Graph()
-        new(Set{Any}(), Edges(Vector{Edge}()), Dict())
+        new(Set{Any}(), Edges(Vector{Edge}()))
     end
     function Graph(nodes::Set{Any}, edges::Edges)
-        new(nodes, edges, Dict())
-    end
-    function Graph(nodes::Set{Any}, edges::Edges, props::Dict)
-        new(nodes, edges, props)
+        new(nodes, edges)
     end
 end
 
@@ -47,7 +38,7 @@ macro nodes(args...)
 end
 
 function graph_nodes(s)
-    :(($(s...),) = $(map(x -> Node(; id=x), s)))
+    :(($(s...),) = $(map(id -> Node(id), s)))
 end
 
 import Base: ==, ∪, isempty, isless
@@ -60,45 +51,63 @@ function isempty(edges::Edges)
     isempty(edges.list)
 end
 
+function nodeof(edge::Edge, ::typeof(first))
+    edge.backward ? edge.nodes[2] : edge.nodes[1]
+end
+
+function nodeof(edge::Edge, ::typeof(last))
+    edge.backward ? edge.nodes[1] : edge.nodes[2]
+end
+
 function ⇿(a::Any, b::Any)::Edge
-    Edge(⇿, (a, b), false, Dict())
-end
-
-function ⇿(a::Any, edge::Edge)::Edges
-    Edges([a ⇿ (edge.backward ? last : first)(edge.nodes), edge])
-end
-
-function ⇿(edge::Edge, b::Any)::Edges
-    Edges([edge, (edge.backward ? first : last)(edge.nodes) ⇿ b])
+    Edge(⇿, (a, b), false)
 end
 
 function ⇿(a::Any, edges::Edges)::Edges
     edge = first(edges.list)
-    Edges([a ⇿ (edge.backward ? last : first)(edge.nodes), edges.list...])
+    Edges([a ⇿ nodeof(edge, first), edges.list...])
+end
+
+function ⇿(a::Any, edge::Edge)::Edges
+    Edges([a ⇿ nodeof(edge, first), edge])
+end
+
+function ⇿(edge::Edge, b::Any)::Edges
+    Edges([edge, nodeof(edge, last) ⇿ b])
 end
 
 function →(a::Any, b::Any)::Edge
-    Edge(→, (a, b), false, Dict())
+    Edge(→, (a, b), false)
+end
+
+function →(a::Any, edges::Edges)::Edges
+    edge = first(edges.list)
+    Edges([a → nodeof(edge, first), edges.list...])
 end
 
 function →(a::Any, edge::Edge)::Edges
-    Edges([a → (edge.backward ? last : first)(edge.nodes), edge])
+    Edges([a → nodeof(edge, first), edge])
 end
 
 function →(edge::Edge, b::Any)::Edges
-    Edges([edge, (edge.backward ? first : last)(edge.nodes) → b])
+    Edges([edge, nodeof(edge, last) → b])
 end
 
 function ←(a::Any, b::Any)::Edge
-    Edge(→, (b, a), true, Dict())
+    Edge(→, (b, a), true)
+end
+
+function ←(a::Any, edges::Edges)::Edges
+    edge = first(edges.list)
+    Edges([a ← nodeof(edge, first), edges.list...])
 end
 
 function ←(a::Any, edge::Edge)::Edges
-    Edges([a ← (edge.backward ? last : first)(edge.nodes), edge])
+    Edges([a ← nodeof(edge, first), edge])
 end
 
 function ←(edge::Edge, b::Any)::Edges
-    Edges([edge, (edge.backward ? first : last)(edge.nodes) ←  b])
+    Edges([edge, nodeof(edge, last) ←  b])
 end
 
 function ∪(edges::Edge...)::Edges
@@ -111,9 +120,9 @@ end
 
 function ==(a::Edge, b::Edge)
     if a.op === b.op === ⇿
-        (Set(a.nodes) == Set(b.nodes)) && (a.props == b.props)
+        Set(a.nodes) == Set(b.nodes)
     else
-        (a.op === b.op) && (a.nodes == b.nodes) && (a.props == b.props)
+        (a.op === b.op) && (a.nodes == b.nodes)
     end
 end
 
@@ -148,7 +157,7 @@ end
 function addedges(g::Graph, edges::Edges)::Graph
     concatedges = Edges(vcat(g.edges.list, edges.list))
     nodes = union(g.nodes, allnodes(concatedges))
-    Graph(nodes, concatedges, g.props)
+    Graph(nodes, concatedges)
 end
 
 function cutedges(g::Graph, edge::Edge)::Graph
@@ -158,7 +167,7 @@ end
 function cutedges(g::Graph, edges::Edges)::Graph
     idlist = idof.(g.edges.list)
     indices = filter(!isnothing, indexin(idlist, idof.(edges.list)))
-    Graph(g.nodes, Edges(g.edges.list[setdiff(1:length(idlist), indices)]), g.props)
+    Graph(g.nodes, Edges(g.edges.list[setdiff(1:length(idlist), indices)]))
 end
 
 function allnodes(edges::Edges)::Vector{Any}

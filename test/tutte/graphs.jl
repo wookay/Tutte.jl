@@ -20,7 +20,7 @@ G = Graph()
 
 @nodes H
 @test H isa Node
-@test H == Node(id=:H)
+@test H == Node(:H)
 @test H.id === :H
 
 G = addedges(G, A ⇿ C)
