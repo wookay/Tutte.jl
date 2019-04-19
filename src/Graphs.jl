@@ -1,6 +1,6 @@
 module Graphs # Tutte.Graphs
 
-using LightGraphs: AbstractGraph, AbstractEdge
+using LightGraphs: AbstractGraph, AbstractEdge, SimpleGraphs
 export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, ⇄, ⇆, addedges, cutedges
 
 struct Node
@@ -30,6 +30,9 @@ struct Graph <: AbstractGraph{Symbol}
     end
     function Graph(nodes::Set{Any}, edges::Edges)
         new(nodes, edges)
+    end
+    function Graph(edges::Edges)
+        new(Set(allnodes(edges)), edges)
     end
 end
 
@@ -192,5 +195,7 @@ function Base.show(io::IO, mime::MIME"text/plain", edges::Edges)
     end
     print(io, "])")
 end
+
+include("lightgraphs.jl")
 
 end # module Tutte.Graphs
