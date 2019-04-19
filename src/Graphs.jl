@@ -1,7 +1,7 @@
 module Graphs # Tutte.Graphs
 
 using LightGraphs: AbstractGraph, AbstractEdge
-export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, addedges, cutedges
+export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, ⇄, ⇆, addedges, cutedges
 
 struct Node
     id::Symbol
@@ -59,55 +59,52 @@ function nodeof(edge::Edge, ::typeof(last))
     edge.backward ? edge.nodes[1] : edge.nodes[2]
 end
 
+# ⇿  \leftrightarrowtriangle<tab>
 function ⇿(a::Any, b::Any)::Edge
     Edge(⇿, (a, b), false)
 end
 
-function ⇿(a::Any, edges::Edges)::Edges
-    edge = first(edges.list)
-    Edges([a ⇿ nodeof(edge, first), edges.list...])
-end
-
-function ⇿(a::Any, edge::Edge)::Edges
-    Edges([a ⇿ nodeof(edge, first), edge])
-end
-
-function ⇿(edge::Edge, b::Any)::Edges
-    Edges([edge, nodeof(edge, last) ⇿ b])
-end
-
+# →  \rightarrow<tab>
 function →(a::Any, b::Any)::Edge
     Edge(→, (a, b), false)
 end
 
-function →(a::Any, edges::Edges)::Edges
-    edge = first(edges.list)
-    Edges([a → nodeof(edge, first), edges.list...])
-end
-
-function →(a::Any, edge::Edge)::Edges
-    Edges([a → nodeof(edge, first), edge])
-end
-
-function →(edge::Edge, b::Any)::Edges
-    Edges([edge, nodeof(edge, last) → b])
-end
-
+# ←  \leftarrow<tab>
 function ←(a::Any, b::Any)::Edge
     Edge(→, (b, a), true)
 end
 
-function ←(a::Any, edges::Edges)::Edges
-    edge = first(edges.list)
-    Edges([a ← nodeof(edge, first), edges.list...])
+# ⇄  \rightleftarrows<tab>
+function ⇄(a::Any, b::Any)::Edges
+    Edges([→(a, b), ←(a, b)])
 end
 
-function ←(a::Any, edge::Edge)::Edges
-    Edges([a ← nodeof(edge, first), edge])
+function ⇄(a::Any, edge::Edge)::Edges
+    Edges([⇄(a, nodeof(edge, first)).list..., edge])
 end
 
-function ←(edge::Edge, b::Any)::Edges
-    Edges([edge, nodeof(edge, last) ←  b])
+# ⇆  \leftrightarrows<tab>
+function ⇆(a::Any, b::Any)::Edges
+    Edges([←(a, b), →(a, b)])
+end
+
+function ⇆(a::Any, edge::Edge)::Edges
+    Edges([⇆(a, nodeof(edge, first)).list..., edge])
+end
+
+for arrow in (:⇿, :→, :←)
+    @eval function ($arrow)(a::Any, edges::Edges)::Edges
+        edge = first(edges.list)
+        Edges([$arrow(a, nodeof(edge, first)), edges.list...])
+    end
+
+    @eval function ($arrow)(a::Any, edge::Edge)::Edges
+        Edges([$arrow(a, nodeof(edge, first)), edge])
+    end
+
+    @eval function ($arrow)(edge::Edge, b::Any)::Edges
+        Edges([edge, $arrow(nodeof(edge, last), b)])
+    end
 end
 
 function ∪(edges::Edge...)::Edges

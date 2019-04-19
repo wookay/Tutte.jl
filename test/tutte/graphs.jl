@@ -50,4 +50,8 @@ G2 = addedges(G, 1 ⇿ 3 → 4 ← 5)
 @test G2.edges == Edges([1 ⇿ 3, 3 → 4, 4 ← 5])
 @test G2.nodes == Set([1, 3, 4, 5])
 
+@test (1 ⇄  2) == Edges([1 → 2, 1 ← 2])
+@test (1 ⇆  2) == Edges([1 ← 2, 1 → 2])
+@test (1 ⇆  2 ⇿ 3) == Edges([1 ← 2, 1 → 2, 2 ⇿ 3])
+
 end # module test_tutte_graphs
