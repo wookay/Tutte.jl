@@ -23,12 +23,12 @@ struct Edges
 end
 
 struct Graph <: AbstractGraph{Symbol}
-    nodes::Set{Any}
+    nodes::Set
     edges::Edges
     function Graph()
-        new(Set{Any}(), Edges(Vector{Edge}()))
+        new(Set(), Edges(Vector{Edge}()))
     end
-    function Graph(nodes::Set{Any}, edges::Edges)
+    function Graph(nodes::Set, edges::Edges)
         new(nodes, edges)
     end
     function Graph(edges::Edges)
@@ -128,6 +128,10 @@ end
 
 function ==(l::Edges, r::Edges)
     length(l.list) == length(r.list) && all(sort(l.list) .== sort(r.list))
+end
+
+function ==(l::Graph, r::Graph)
+    l.nodes == r.nodes && l.edges == r.edges
 end
 
 function idof(node::Any)

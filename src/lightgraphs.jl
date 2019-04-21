@@ -1,6 +1,6 @@
 # module Tutte.Graphs
 
-using .SimpleGraphs: SimpleGraph, SimpleDiGraph, add_edge!
+using .SimpleGraphs: SimpleGraph, SimpleDiGraph, add_edge!, vertices, edges, savegraph, loadgraph, LGFormat
 
 function SimpleGraph(nodes::Set{Any}, edges::Edges)::SimpleGraph
     vertices = sort(collect(nodes))
@@ -38,6 +38,22 @@ end
 
 function SimpleDiGraph(g::Graph)::SimpleDiGraph
     SimpleDiGraph(g.nodes, g.edges)
+end
+
+function Graph(sg::SimpleGraph)
+    Graph(Set(collect(vertices(sg))), Edges([Edge(⇿, (edge.src, edge.dst), false) for edge in edges(sg)]))
+end
+
+function Graph(sg::SimpleDiGraph)
+    Graph(Set(collect(vertices(sg))), Edges([Edge(→, (edge.src, edge.dst), false) for edge in edges(sg)]))
+end
+
+function SimpleGraphs.savegraph(io::IO, g::AbstractGraph)
+    savegraph(io, g, LGFormat())
+end
+
+function SimpleGraphs.loadgraph(io::IO)
+    loadgraph(io, "graph", LGFormat())
 end
 
 # module Tutte.Graphs
