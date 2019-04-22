@@ -17,6 +17,8 @@ G = Graph()
 @test union(C → D, D ← C) == Edges([C → D]) == Edges([D ← C])
 @test union(C → D, D → C) == Edges([C → D, D → C]) == Edges([C → D, C ← D])
 @test union(C → D, D → E, E ⇿ F) == Edges([C → D, D → E, E ⇿ F])
+@test union(C → D, D → E → B) == Edges([C → D, D → E, E → B])
+@test union(C → D, D → E → B, B → F) == Edges([C → D, D → E, E → B, B → F])
 
 @nodes H
 @test H isa Node

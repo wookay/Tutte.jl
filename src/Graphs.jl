@@ -15,10 +15,16 @@ end
 
 struct Edges
     list::Vector{Edge}
-    function Edges(list::Vector{Edge})
-        new(unique(list) do edge
-            (edge.op, edge.nodes, false)
-        end)
+    function Edges(list::Vector{Edge}; isunique=false)
+        if isunique
+            new(list)
+        else
+            edges = Vector{Edge}()
+            @inbounds for edge in list
+                !(edge in edges) && push!(edges, edge)
+            end
+            new(edges)
+        end
     end
 end
 
@@ -26,7 +32,7 @@ struct Graph <: AbstractGraph{Symbol}
     nodes::Set
     edges::Edges
     function Graph()
-        new(Set(), Edges(Vector{Edge}()))
+        new(Set(), Edges(Vector{Edge}(), isunique=true))
     end
     function Graph(nodes::Set, edges::Edges)
         new(nodes, edges)
@@ -44,7 +50,7 @@ function graph_nodes(s)
     :(($(s...),) = $(map(id -> Node(id), s)))
 end
 
-import Base: ==, ∪, isempty, isless
+import Base: ==, union, isempty
 
 function isempty(g::Graph)
     isempty(g.nodes) && isempty(g.edges)
@@ -79,7 +85,7 @@ end
 
 # ⇄  \rightleftarrows<tab>
 function ⇄(a::Any, b::Any)::Edges
-    Edges([→(a, b), ←(a, b)])
+    Edges([→(a, b), ←(a, b)], isunique=true)
 end
 
 function ⇄(a::Any, edge::Edge)::Edges
@@ -88,7 +94,7 @@ end
 
 # ⇆  \leftrightarrows<tab>
 function ⇆(a::Any, b::Any)::Edges
-    Edges([←(a, b), →(a, b)])
+    Edges([←(a, b), →(a, b)], isunique=true)
 end
 
 function ⇆(a::Any, edge::Edge)::Edges
@@ -110,12 +116,18 @@ for arrow in (:⇿, :→, :←)
     end
 end
 
-function ∪(edges::Edge...)::Edges
-    Edges([edges...])
-end
-
-function ==(a::Node, b::Node)
-    idof(a) == idof(b)
+function union(args::Union{Edge, Edges}...)::Edges
+    list = Vector{Edge}()
+    @inbounds for arg in args
+        if arg isa Edge
+            !(arg in list) && push!(list, arg)
+        elseif arg isa Edges
+            for edge in arg.list
+                !(edge in list) && push!(list, edge)
+            end
+        end
+    end
+    Edges(list, isunique=true)
 end
 
 function ==(a::Edge, b::Edge)
@@ -127,55 +139,45 @@ function ==(a::Edge, b::Edge)
 end
 
 function ==(l::Edges, r::Edges)
-    length(l.list) == length(r.list) && all(sort(l.list) .== sort(r.list))
+    length(l.list) == length(r.list) || return false
+    a = Dict(((edge.op === ⇿) ? Set(edge.nodes) : edge.nodes) => edge.op for edge in l.list)
+    b = Dict(((edge.op === ⇿) ? Set(edge.nodes) : edge.nodes) => edge.op for edge in r.list)
+    a == b
 end
 
 function ==(l::Graph, r::Graph)
     l.nodes == r.nodes && l.edges == r.edges
 end
 
-function idof(node::Any)
-    node
-end
-
-function idof(node::Node)
-    node.id
-end
-
-function idof(edge::Edge)
-    (Symbol(edge.op), idof.(edge.nodes))
-end
-
-function isless(l::Edge, r::Edge)
-    isless(idof(l), idof(r))
-end
-
-function isless(l::Node, r::Node)
-    isless(idof(l), idof(r))
-end
-
 function addedges(g::Graph, edge::Edge)::Graph
-    addedges(g, Edges([edge]))
+    addedges(g, Edges([edge], isunique=true))
 end
 
 function addedges(g::Graph, edges::Edges)::Graph
-    concatedges = Edges(vcat(g.edges.list, edges.list))
-    nodes = union(g.nodes, allnodes(concatedges))
+    list = Vector{Edge}(g.edges.list)
+    nodes = Set(g.nodes)
+    @inbounds for edge in edges.list
+        if !(edge in g.edges.list)
+            push!(list, edge)
+            push!(nodes, edge.nodes...)
+        end
+    end
+    concatedges = Edges(list, isunique=true)
     Graph(nodes, concatedges)
 end
 
 function cutedges(g::Graph, edge::Edge)::Graph
-    cutedges(g, Edges([edge]))
+    cutedges(g, Edges([edge], isunique=true))
 end
 
 function cutedges(g::Graph, edges::Edges)::Graph
-    idlist = idof.(g.edges.list)
-    indices = filter(!isnothing, indexin(idlist, idof.(edges.list)))
-    Graph(g.nodes, Edges(g.edges.list[setdiff(1:length(idlist), indices)]))
+    list = g.edges.list
+    indices = filter(!isnothing, indexin(list, edges.list))
+    Graph(g.nodes, Edges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
 end
 
 function allnodes(edges::Edges)::Vector{Any}
-    vcat(map(edge -> [edge.nodes...], edges.list)...)
+    vcat(map(edge -> collect(edge.nodes), edges.list)...)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", edge::Edge)
@@ -193,7 +195,7 @@ end
 function Base.show(io::IO, mime::MIME"text/plain", edges::Edges)
     count = length(edges.list)
     print(io, "Edges([")
-    for (idx, edge) in enumerate(edges.list)
+    @inbounds for (idx, edge) in enumerate(edges.list)
         Base.show(io, mime, edge)
         count != idx && print(io, ", ")
     end

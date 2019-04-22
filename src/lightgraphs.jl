@@ -13,12 +13,12 @@ function SimpleGraph(nodes::Set{Any}, edges::Edges)::SimpleGraph
     r
 end
 
-function SimpleGraph(edges::Edges)::SimpleGraph
-    SimpleGraph(Set(allnodes(edges)), edges)
-end
-
 function SimpleGraph(g::Graph)::SimpleGraph
     SimpleGraph(g.nodes, g.edges)
+end
+
+function SimpleGraph(edges::Edges)::SimpleGraph
+    SimpleGraph(Set(allnodes(edges)), edges)
 end
 
 function SimpleDiGraph(nodes::Set{Any}, edges::Edges)::SimpleDiGraph
@@ -32,12 +32,12 @@ function SimpleDiGraph(nodes::Set{Any}, edges::Edges)::SimpleDiGraph
     r
 end
 
-function SimpleDiGraph(edges::Edges)::SimpleDiGraph
-    SimpleDiGraph(Set(allnodes(edges)), edges)
-end
-
 function SimpleDiGraph(g::Graph)::SimpleDiGraph
     SimpleDiGraph(g.nodes, g.edges)
+end
+
+function SimpleDiGraph(edges::Edges)::SimpleDiGraph
+    SimpleDiGraph(Set(allnodes(edges)), edges)
 end
 
 function Graph(sg::SimpleGraph)
