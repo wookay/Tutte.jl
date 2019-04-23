@@ -9,7 +9,7 @@ using GraphPlot # spring_layout
 graph = Graph(A ⇿ C ⇿ D ⇿ E)
 idmap = IDMap(graph)
 g = SimpleGraph(graph)
-locs_x, locs_y = spring_layout(g)
+locs_x, locs_y = spring_layout(g; seed=2017)
 
 points = []
 nodesize = 1
@@ -28,8 +28,8 @@ for (e_idx, e) in enumerate(edges(g))
     push!(points, (from=rounded.((startx, starty)), to=rounded.((endx, endy)), edge=(idmap[i], idmap[j])))
 end
 
-@test points == [(from = (0.29, 0.29), to = (1.06, 1.06), edge = (A, C)),
-                 (from = (-0.35, -0.35), to = (0.35, 0.35), edge = (C, D)),
-                 (from = (-1.06, -1.06), to = (-0.29, -0.29), edge = (D, E))]
+@test points == [(from = (-0.29, 0.29), to = (-1.06, 1.06), edge = (Node(:A), Node(:C))),
+                 (from = (0.35, -0.35), to = (-0.35, 0.35), edge = (Node(:C), Node(:D))),
+                 (from = (1.06, -1.06), to = (0.29, -0.29), edge = (Node(:D), Node(:E)))]
 
 end
