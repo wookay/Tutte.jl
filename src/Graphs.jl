@@ -50,7 +50,7 @@ function graph_nodes(s)
     :(($(s...),) = $(map(id -> Node(id), s)))
 end
 
-import Base: ==, union, isempty
+import Base: ==, union, isempty, isless
 
 function isempty(g::Graph)
     isempty(g.nodes) && isempty(g.edges)
@@ -66,6 +66,10 @@ end
 
 function nodeof(edge::Edge, ::typeof(last))
     edge.backward ? edge.nodes[1] : edge.nodes[2]
+end
+
+function isless(a::Node, b::Node)
+    a.id < b.id
 end
 
 # ⇿  \leftrightarrowtriangle<tab>

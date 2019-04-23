@@ -1,6 +1,20 @@
 # module Tutte.Graphs
 
+export IDMap
+
 using .SimpleGraphs: SimpleGraph, SimpleDiGraph, add_edge!, vertices, edges, savegraph, loadgraph, LGFormat
+
+struct IDMap
+    vertices::Vector{Any}
+    function IDMap(g::Graph)
+        vertices = sort(collect(g.nodes))
+        new(vertices)
+    end
+end
+
+function Base.getindex(idmap::IDMap, nth::Integer)::Any
+    idmap.vertices[nth]
+end
 
 function SimpleGraph(nodes::Set{Any}, edges::Edges)::SimpleGraph
     vertices = sort(collect(nodes))
