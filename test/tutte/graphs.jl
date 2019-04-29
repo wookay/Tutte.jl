@@ -1,7 +1,7 @@
 module test_tutte_graphs
 
 using Test
-using Tutte.Graphs # Graph Edge Edges Node @nodes ⇿ → ←  addedges cutedges
+using Tutte.Graphs # Graph Edge Edges Node @nodes ⇿ → ←  addedges cutedges addedges! cutedges!
 
 G = Graph()
 @nodes A B C D E F
@@ -55,5 +55,25 @@ G2 = addedges(G, 1 ⇿ 3 → 4 ← 5)
 @test (1 ⇄  2) == Edges([1 → 2, 1 ← 2])
 @test (1 ⇆  2) == Edges([1 ← 2, 1 → 2])
 @test (1 ⇆  2 ⇿ 3) == Edges([1 ← 2, 1 → 2, 2 ⇿ 3])
+
+G = Graph()
+addedges!(G, A ⇿ C) do edges, nodes
+    @test edges == [A ⇿ C]
+    @test nodes == Set([A, C])
+end
+@test G.edges == Edges([A ⇿ C])
+@test G.nodes == Set([A, C])
+addedges!(G, A ⇿ C → D ← F) do edges, nodes
+    @test edges == [C → D, F → D]
+    @test nodes == Set([D, F, C])
+end
+@test G.edges == Edges([A ⇿ C, C → D, D ← F])
+@test G.nodes == Set([A, C, D, F])
+cutedges!(G, A ⇿ C) do edges, nodes
+    @test edges == [A ⇿ C]
+    @test nodes == Set([A, C])
+end
+@test G.edges == Edges([C → D, D ← F])
+@test G.nodes == Set([A, C, D, F])
 
 end # module test_tutte_graphs

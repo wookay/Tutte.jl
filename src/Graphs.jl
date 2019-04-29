@@ -1,7 +1,7 @@
 module Graphs # Tutte.Graphs
 
 using LightGraphs: AbstractGraph, AbstractEdge, SimpleGraphs
-export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, ⇄, ⇆, addedges, cutedges
+export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, ⇄, ⇆, addedges, cutedges, addedges!, cutedges!
 
 struct Node
     id::Symbol
@@ -170,6 +170,26 @@ function addedges(g::Graph, edges::Edges)::Graph
     Graph(nodes, concatedges)
 end
 
+function addedges!(callback, g::Graph, edge::Edge)
+    addedges!(callback, g, Edges([edge], isunique=true))
+end
+
+function addedges!(callback, g::Graph, edges::Edges)
+    list = Vector{Edge}()
+    nodes = Set()
+    @inbounds for edge in edges.list
+        if !(edge in g.edges.list)
+            push!(list, edge)
+            push!(nodes, edge.nodes...)
+        end
+    end
+    if !isempty(list)
+        append!(g.edges.list, list)
+        push!(g.nodes, nodes...)
+        callback(list, nodes)
+    end
+end
+
 function cutedges(g::Graph, edge::Edge)::Graph
     cutedges(g, Edges([edge], isunique=true))
 end
@@ -178,6 +198,23 @@ function cutedges(g::Graph, edges::Edges)::Graph
     list = g.edges.list
     indices = filter(!isnothing, indexin(list, edges.list))
     Graph(g.nodes, Edges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
+end
+
+function cutedges!(callback, g::Graph, edge::Edge)
+    cutedges!(callback, g, Edges([edge], isunique=true))
+end
+
+function cutedges!(callback, g::Graph, edges::Edges)
+    indices = filter(!isnothing, indexin(g.edges.list, edges.list))
+    if length(g.edges.list) != length(indices)
+        list = g.edges.list[indices]
+        nodes = Set()
+        for edge in list
+            push!(nodes, edge.nodes...)
+        end
+        deleteat!(g.edges.list, indices)
+        callback(list, nodes)
+    end
 end
 
 function allnodes(edges::Edges)::Vector{Any}
