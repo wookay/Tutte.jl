@@ -1,6 +1,6 @@
 # module Tutte.Graphs
 
-export IDMap
+export IDMap, indexof
 
 using .SimpleGraphs: SimpleGraph, SimpleDiGraph, add_edge!, vertices, edges, savegraph, loadgraph, LGFormat
 
@@ -14,6 +14,13 @@ end
 
 function Base.getindex(idmap::IDMap, nth::Integer)::Any
     idmap.vertices[nth]
+end
+
+function indexof(idmap::IDMap, node)::Union{Integer, Nothing}
+    for (i, vertice) in enumerate(idmap.vertices)
+        vertice == node && return i
+    end
+    return nothing
 end
 
 function SimpleGraph(nodes::Set{Any}, edges::Edges)::SimpleGraph

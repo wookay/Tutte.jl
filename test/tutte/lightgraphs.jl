@@ -1,8 +1,8 @@
 module test_tutte_lightgraphs
 
 using Test
-using Tutte.Graphs # ⇿ → ←
-using LightGraphs.SimpleGraphs: SimpleGraph, SimpleDiGraph, nv, ne
+using Tutte.Graphs # ⇿ → ←  IDMap indexof
+using LightGraphs.SimpleGraphs: SimpleGraph, SimpleDiGraph, nv, ne, vertices, dfs_tree
 
 r = SimpleGraph(1 ⇿ 3 ⇿ 4 ⇿ 5)
 @test r isa SimpleGraph{Int}
@@ -23,5 +23,15 @@ Graphs.savegraph(buf, r)
 @test String(take!(buf)) == "4,3,d,graph,2,Int64,simplegraph\n1,2\n2,3\n4,3\n"
 buf = IOBuffer("4,3,d,graph,2,Int64,simplegraph\n1,2\n2,3\n4,3\n")
 @test r == Graphs.loadgraph(buf)
+
+@nodes A B C D E F
+graph = Graph(union(A → C → D → E, C → E ← F))
+idmap = IDMap(graph)
+g = SimpleDiGraph(graph)
+@test vertices(g) == Base.OneTo(5)
+
+tree = dfs_tree(g, 1)
+@test tree isa SimpleDiGraph{Int}
+@test indexof(idmap, C) == 2
 
 end # module test_tutte_lightgraphs
