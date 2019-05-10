@@ -42,10 +42,12 @@ g = SimpleDiGraph(graph)
 
 # Depth-first search
 d = dfs_tree(g, 3)
+@test d isa SimpleDiGraph
 @test collect(edges(d)) == [SimpleEdge(3, 4), SimpleEdge(4, 5)]
 
 # Breadth-first search
 b = bfs_tree(g, 3)
+@test b isa SimpleDiGraph
 @test collect(edges(b)) == [SimpleEdge(3, 4), SimpleEdge(3, 5)]
 
 
@@ -55,10 +57,12 @@ g = SimpleGraph(graph)
 
 # Depth-first search
 d = dfs_tree(g, 3)
+@test d isa SimpleDiGraph
 @test collect(edges(d)) == [SimpleEdge(3, 1), SimpleEdge(3, 2), SimpleEdge(3, 4), SimpleEdge(4, 5), SimpleEdge(5, 6)]
 
 # Breadth-first search
 b = bfs_tree(g, 3)
+@test b isa SimpleDiGraph
 @test collect(edges(b)) == [SimpleEdge(3, 1), SimpleEdge(3, 2), SimpleEdge(3, 4), SimpleEdge(3, 5), SimpleEdge(5, 6)]
 
 end # module test_tutte_lightgraphs
