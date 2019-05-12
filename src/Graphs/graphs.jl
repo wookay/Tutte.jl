@@ -1,7 +1,6 @@
 # module Tutte.Graphs
 
 using LightGraphs: AbstractGraph, AbstractEdge, SimpleGraphs
-export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, ⇄, ⇆, addedges, cutedges, addedges!, cutedges!
 
 struct Node
     id::Symbol

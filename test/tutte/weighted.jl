@@ -1,8 +1,7 @@
-using Jive
-@useinside module test_tutte_weighted
+module test_tutte_weighted
 
 using Test
-using Tutte.Graphs # Weighted @nodes
+using Tutte.Graphs # Weighted @nodes → ⇿
 
 @nodes A B C D E F G
 

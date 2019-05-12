@@ -1,7 +1,5 @@
 # module Tutte.Graphs
 
-export Weighted
-
 struct Weighted
     graph::Graph
     weights::Vector

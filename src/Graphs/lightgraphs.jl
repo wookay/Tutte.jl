@@ -1,7 +1,5 @@
 # module Tutte.Graphs
 
-export IDMap, indexof
-
 using .SimpleGraphs: SimpleGraph, SimpleDiGraph, add_edge!, vertices, edges, savegraph, loadgraph, LGFormat
 
 struct IDMap
