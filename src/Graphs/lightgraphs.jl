@@ -21,7 +21,7 @@ function indexof(idmap::IDMap, node)::Union{Integer, Nothing}
     return nothing
 end
 
-function SimpleGraph(nodes::Set{Any}, edges::Edges)::SimpleGraph
+function SimpleGraph(nodes::Set{T}, edges::Edges{T})::SimpleGraph{Int} where T
     vertices = sort(collect(nodes))
     len = length(vertices)
     dict = Dict(zip(vertices, 1:len))
@@ -32,15 +32,15 @@ function SimpleGraph(nodes::Set{Any}, edges::Edges)::SimpleGraph
     r
 end
 
-function SimpleGraph(g::Graph)::SimpleGraph
+function SimpleGraph(g::Graph)::SimpleGraph{Int}
     SimpleGraph(g.nodes, g.edges)
 end
 
-function SimpleGraph(edges::Edges)::SimpleGraph
+function SimpleGraph(edges::Edges)::SimpleGraph{Int}
     SimpleGraph(Set(allnodes(edges)), edges)
 end
 
-function SimpleDiGraph(nodes::Set{Any}, edges::Edges)::SimpleDiGraph
+function SimpleDiGraph(nodes::Set{T}, edges::Edges{T})::SimpleDiGraph{Int} where T
     vertices = sort(collect(nodes))
     len = length(vertices)
     dict = Dict(zip(vertices, 1:len))
@@ -51,20 +51,20 @@ function SimpleDiGraph(nodes::Set{Any}, edges::Edges)::SimpleDiGraph
     r
 end
 
-function SimpleDiGraph(g::Graph)::SimpleDiGraph
+function SimpleDiGraph(g::Graph)::SimpleDiGraph{Int}
     SimpleDiGraph(g.nodes, g.edges)
 end
 
-function SimpleDiGraph(edges::Edges)::SimpleDiGraph
+function SimpleDiGraph(edges::Edges)::SimpleDiGraph{Int}
     SimpleDiGraph(Set(allnodes(edges)), edges)
 end
 
-function Graph(sg::SimpleGraph)
-    Graph(Set(collect(vertices(sg))), Edges([Edge(⇿, (edge.src, edge.dst), false) for edge in edges(sg)]))
+function Graph(sg::SimpleGraph{Int})
+    Graph(Set{Int}(collect(vertices(sg))), Edges([Edge(⇿, (edge.src, edge.dst), false) for edge in edges(sg)]))
 end
 
-function Graph(sg::SimpleDiGraph)
-    Graph(Set(collect(vertices(sg))), Edges([Edge(→, (edge.src, edge.dst), false) for edge in edges(sg)]))
+function Graph(sg::SimpleDiGraph{Int})
+    Graph(Set{Int}(collect(vertices(sg))), Edges([Edge(→, (edge.src, edge.dst), false) for edge in edges(sg)]))
 end
 
 function SimpleGraphs.savegraph(io::IO, g::AbstractGraph)

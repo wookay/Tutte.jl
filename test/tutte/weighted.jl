@@ -1,7 +1,7 @@
 module test_tutte_weighted
 
 using Test
-using Tutte.Graphs # Weighted @nodes → ← ⇿ ⇄  ⇆
+using Tutte.Graphs # Weighted Node @nodes → ← ⇿ ⇄  ⇆
 
 @nodes A B C D E F G
 
@@ -13,7 +13,7 @@ w2 = Weighted([A 5⇿ C 2⇿ F 1⇿ G], [A 3⇿ D 4⇿ F], [B 9⇿ D 8⇿ G], [B
 @test w2.graph.edges.list == [A ⇿ C, C ⇿ F, F ⇿ G, A ⇿ D, D ⇿ F, B ⇿ D, D ⇿ G, B ⇿ E, E ⇿ G]
 @test w2.weights == [5, 2, 1, 3, 4, 9, 8, 6, 4]
 
-w3 = Weighted()
+w3 = Weighted{Node}()
 @test isempty(w3.graph)
 @test isempty(w3.weights)
 

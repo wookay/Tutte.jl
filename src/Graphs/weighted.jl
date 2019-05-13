@@ -1,16 +1,20 @@
 # module Tutte.Graphs
 
-struct Weighted
-    graph::Graph
+struct Weighted{T}
+    graph::Graph{T}
     weights::Vector
+    function Weighted{T}() where T
+        new{T}(Graph{T}(), [])
+    end
     function Weighted(args::Array{Any,2}...)
-        isempty(args) && return new(Graph(), [])
-        list = Vector{Edge}()
+        isempty(args) && throw(ArgumentError("Weighted isempty"))
+        T = typeof(first(first(args)))
+        list = Vector{Edge{T}}()
         weights = []
-        function push_edge(e::Edge, prev)
+        function push_edge(e::Edge{ET}, prev) where ET
             weight = nodeof(e, first)
             second = nodeof(e, last)
-            edge = Edge(e.op, e.backward ? (second, prev) : (prev, second), e.backward)
+            edge = Edge{T}(e.op, e.backward ? (second, prev) : (prev, second), e.backward)
             idx = indexin([edge], list)
             if [nothing] == idx
                 push!(list, edge)
@@ -36,7 +40,7 @@ struct Weighted
             end
         end
         graph = Graph(Edges(list; isunique=true))
-        new(graph, weights)
+        new{T}(graph, weights)
     end
 end
 

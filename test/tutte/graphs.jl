@@ -3,7 +3,7 @@ module test_tutte_graphs
 using Test
 using Tutte.Graphs # Graph Edge Edges Node @nodes ⇿ → ←  addedges cutedges addedges! cutedges!
 
-G = Graph()
+G = Graph{Node}()
 @nodes A B C D E F
 
 @test isempty(G)
@@ -47,7 +47,7 @@ G3 = cutedges(G2, A ⇿ C)
 @test (1 ⇿ 2) isa Edge
 @test (1 ⇿ 2 ⇿ 3) isa Edges
 
-G = Graph()
+G = Graph{Int}()
 G2 = addedges(G, 1 ⇿ 3 → 4 ← 5)
 @test G2.edges == Edges([1 ⇿ 3, 3 → 4, 4 ← 5])
 @test G2.nodes == Set([1, 3, 4, 5])
@@ -56,7 +56,7 @@ G2 = addedges(G, 1 ⇿ 3 → 4 ← 5)
 @test (1 ⇆  2) == Edges([1 ← 2, 1 → 2])
 @test (1 ⇆  2 ⇿ 3) == Edges([1 ← 2, 1 → 2, 2 ⇿ 3])
 
-G = Graph()
+G = Graph{Node}()
 addedges!(G, A ⇿ C) do edges, nodes
     @test edges == [A ⇿ C]
     @test nodes == Set([A, C])
