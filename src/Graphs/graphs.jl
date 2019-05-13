@@ -1,6 +1,6 @@
 # module Tutte.Graphs
 
-using LightGraphs: AbstractGraph, AbstractEdge, SimpleGraphs
+using LightGraphs: AbstractGraph, AbstractEdge
 
 struct Node
     id::Symbol
@@ -72,49 +72,49 @@ function isless(a::Node, b::Node)
 end
 
 # ⇿  \leftrightarrowtriangle<tab>
-function ⇿(a::A, b::B)::Edge{Union{A,B}} where {A, B}
-    Edge{Union{A,B}}(⇿, (a, b), false)
+function ⇿(a::T, b::T)::Edge{T} where T
+    Edge{T}(⇿, (a, b), false)
 end
 
 # →  \rightarrow<tab>
-function →(a::A, b::B)::Edge{Union{A,B}} where {A, B}
-    Edge{Union{A,B}}(→, (a, b), false)
+function →(a::T, b::T)::Edge{T} where T
+    Edge{T}(→, (a, b), false)
 end
 
 # ←  \leftarrow<tab>
-function ←(a::A, b::B)::Edge{Union{A, B}} where {A, B}
-    Edge{Union{A,B}}(→, (b, a), true)
+function ←(a::T, b::T)::Edge{T} where T
+    Edge{T}(→, (b, a), true)
 end
 
 # ⇄  \rightleftarrows<tab>
-function ⇄(a::A, b::B)::Edges where {A, B}
+function ⇄(a::T, b::T)::Edges{T} where T
     Edges([→(a, b), ←(a, b)], isunique=true)
 end
 
-function ⇄(a::A, edge::Edge{B})::Edges{Union{A, Edge{B}}} where {A, B}
-    Edges([⇄(a, nodeof(edge, first)).list..., edge])
-end
-
 # ⇆  \leftrightarrows<tab>
-function ⇆(a::Any, b::Any)::Edges
+function ⇆(a::T, b::T)::Edges{T} where T
     Edges([←(a, b), →(a, b)], isunique=true)
 end
 
-function ⇆(a::Any, edge::Edge)::Edges
+function ⇄(a::T, edge::Edge{T})::Edges{T} where T
+    Edges([⇄(a, nodeof(edge, first)).list..., edge])
+end
+
+function ⇆(a::T, edge::Edge{T})::Edges{T} where T
     Edges([⇆(a, nodeof(edge, first)).list..., edge])
 end
 
 for arrow in (:⇿, :→, :←)
-    @eval function ($arrow)(a::Any, edges::Edges{T})::Edges where T
+    @eval function ($arrow)(a::T, edges::Edges{T})::Edges where T
         edge = first(edges.list)
         Edges([$arrow(a, nodeof(edge, first)), edges.list...])
     end
 
-    @eval function ($arrow)(a::Any, edge::Edge{T})::Edges where T
+    @eval function ($arrow)(a::T, edge::Edge{T})::Edges where T
         Edges([$arrow(a, nodeof(edge, first)), edge])
     end
 
-    @eval function ($arrow)(edge::Edge{T}, b::Any)::Edges where T
+    @eval function ($arrow)(edge::Edge{T}, b::T)::Edges where T
         Edges([edge, $arrow(nodeof(edge, last), b)])
     end
 end
@@ -135,7 +135,7 @@ end
 
 function ==(a::Edge{T}, b::Edge{T}) where T
     if a.op === b.op === ⇿
-        Set(a.nodes) == Set(b.nodes)
+        Set{T}(a.nodes) == Set{T}(b.nodes)
     else
         (a.op === b.op) && (a.nodes == b.nodes)
     end
@@ -143,8 +143,8 @@ end
 
 function ==(l::Edges{T}, r::Edges{T}) where T
     length(l.list) == length(r.list) || return false
-    a = Dict(((edge.op === ⇿) ? Set(edge.nodes) : edge.nodes) => edge.op for edge in l.list)
-    b = Dict(((edge.op === ⇿) ? Set(edge.nodes) : edge.nodes) => edge.op for edge in r.list)
+    a = Dict(((edge.op === ⇿) ? Set{T}(edge.nodes) : edge.nodes) => edge.op for edge in l.list)
+    b = Dict(((edge.op === ⇿) ? Set{T}(edge.nodes) : edge.nodes) => edge.op for edge in r.list)
     a == b
 end
 

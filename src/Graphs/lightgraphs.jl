@@ -1,20 +1,20 @@
 # module Tutte.Graphs
 
-using .SimpleGraphs: SimpleGraph, SimpleDiGraph, add_edge!, vertices, edges, savegraph, loadgraph, LGFormat
+using LightGraphs.SimpleGraphs: SimpleGraphs, SimpleGraph, SimpleDiGraph, LGFormat, add_edge!, vertices, edges, savegraph, loadgraph
 
-struct IDMap
-    vertices::Vector{Any}
-    function IDMap(g::Graph)
-        vertices = sort(collect(g.nodes))
-        new(vertices)
+struct IDMap{T}
+    vertices::Vector{T}
+    function IDMap(g::Graph{T}) where T
+        sortednodes = sort(collect(g.nodes))
+        new{T}(sortednodes)
     end
 end
 
-function Base.getindex(idmap::IDMap, nth::Integer)::Any
+function Base.getindex(idmap::IDMap{T}, nth::Integer)::T where T
     idmap.vertices[nth]
 end
 
-function indexof(idmap::IDMap, node)::Union{Integer, Nothing}
+function indexof(idmap::IDMap{T}, node::T)::Union{Integer, Nothing} where T
     for (i, vertice) in enumerate(idmap.vertices)
         vertice == node && return i
     end
@@ -68,11 +68,11 @@ function Graph(sg::SimpleDiGraph{Int})
 end
 
 function SimpleGraphs.savegraph(io::IO, g::AbstractGraph)
-    savegraph(io, g, LGFormat())
+    SimpleGraphs.savegraph(io, g, LGFormat())
 end
 
 function SimpleGraphs.loadgraph(io::IO)
-    loadgraph(io, "graph", LGFormat())
+    SimpleGraphs.loadgraph(io, "graph", LGFormat())
 end
 
 # module Tutte.Graphs

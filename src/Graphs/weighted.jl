@@ -44,4 +44,32 @@ struct Weighted{T}
     end
 end
 
+function ⇿(a::A, b::B)::Edge{Union{A,B}} where {A, B}
+    Edge{Union{A,B}}(⇿, (a, b), false)
+end
+
+function →(a::A, b::B)::Edge{Union{A,B}} where {A, B}
+    Edge{Union{A,B}}(→, (a, b), false)
+end
+
+function ←(a::A, b::B)::Edge{Union{A, B}} where {A, B}
+    Edge{Union{A,B}}(→, (b, a), true)
+end
+
+function ⇄(a::A, b::B)::Edges{Union{A, B}} where {A, B}
+    Edges([→(a, b), ←(a, b)], isunique=true)
+end
+
+function ⇆(a::A, b::B)::Edges{Union{A, B}} where {A, B}
+    Edges([←(a, b), →(a, b)], isunique=true)
+end
+
+function ⇄(a::A, edge::Edge{B})::Edges{Union{A, B}} where {A, B}
+    Edges([⇄(a, nodeof(edge, first)).list..., edge])
+end
+
+function ⇆(a::A, edge::Edge{B})::Edges{Union{A, B}} where {A, B}
+    Edges([⇆(a, nodeof(edge, first)).list..., edge])
+end
+
 # module Tutte.Graphs
