@@ -152,6 +152,10 @@ function ==(l::Graph, r::Graph)
     l.nodes == r.nodes && l.edges == r.edges
 end
 
+function Base.iterate(edges::Edges, state = 1)
+    iterate(edges.list, state)
+end
+
 function addedges(g::Graph, edge::Edge)::Graph
     addedges(g, Edges([edge], isunique=true))
 end
