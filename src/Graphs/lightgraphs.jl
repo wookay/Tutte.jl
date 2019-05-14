@@ -59,12 +59,12 @@ function SimpleDiGraph(edges::Edges)::SimpleDiGraph{Int}
     SimpleDiGraph(Set(allnodes(edges)), edges)
 end
 
-function Graph(sg::SimpleGraph{Int})
-    Graph(Set{Int}(collect(vertices(sg))), Edges([Edge(⇿, (edge.src, edge.dst), false) for edge in edges(sg)]))
+function Graph(sg::SimpleGraph{T}) where T
+    Graph{T}(Set{T}(collect(vertices(sg))), Edges([Edge(⇿, (edge.src, edge.dst), false) for edge in edges(sg)]))
 end
 
-function Graph(sg::SimpleDiGraph{Int})
-    Graph(Set{Int}(collect(vertices(sg))), Edges([Edge(→, (edge.src, edge.dst), false) for edge in edges(sg)]))
+function Graph(sg::SimpleDiGraph{T}) where T
+    Graph{T}(Set{T}(collect(vertices(sg))), Edges([Edge(→, (edge.src, edge.dst), false) for edge in edges(sg)]))
 end
 
 function SimpleGraphs.savegraph(io::IO, g::AbstractGraph)

@@ -76,4 +76,15 @@ end
 @test G.edges == Edges([C → D, D ← F])
 @test G.nodes == Set([A, C, D, F])
 
+@test Edge(→, (1, 2), false) isa Edge{Int}
+@test Edge{Int}(→, (1, 2), false) isa Edge{Int}
+
+@test Edges([1 → 2]) isa Edges{Int}
+@test Edges{Int}([1 → 2]) isa Edges{Int}
+
+@test Graph(1 → 2) isa Graph{Int}
+@test Graph{Int}(1 → 2) isa Graph{Int}
+@test Graph(1 → 2 → 3) isa Graph{Int}
+@test Graph{Int}(1 → 2 → 3) isa Graph{Int}
+
 end # module test_tutte_graphs

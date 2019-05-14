@@ -37,4 +37,26 @@ w8 = Weighted([A 1⇿ C])
 @test w8.graph.edges.list == [A ⇿ C]
 @test w8.weights == [1]
 
+w9 = Weighted([1 -1→ 2])
+@test w9.graph.edges.list == [1 → 2]
+@test w9.weights == [-1]
+@test w9 isa Weighted{Int}
+addedges!(w9, [1 6→ 2 7→ 3]) do edges, weights, nodes
+    @test edges == [1 → 2, 2 → 3]
+    @test weights == [5, 7]
+    @test nodes == Set([1, 2, 3])
+end
+@test w9.graph.edges.list == [1 → 2, 2 → 3]
+@test w9.weights == [5, 7]
+cutedges!(w9, 1 → 2) do edges, weights, nodes
+    @test edges == [1 → 2]
+    @test weights == [5]
+    @test nodes == Set([1, 2])
+end
+@test w9.graph.edges.list == [2 → 3]
+@test w9.weights == [7]
+
+@test Weighted([1 1⇿ 2]) isa Weighted{Int}
+@test Weighted{Int}([1 1⇿ 2]) isa Weighted{Int}
+
 end # module test_tutte_weighted

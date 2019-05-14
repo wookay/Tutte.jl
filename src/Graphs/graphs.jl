@@ -14,7 +14,8 @@ end
 
 struct Edges{T}
     list::Vector{Edge{T}}
-    function Edges(list::Vector{Edge{T}}; isunique=false) where T
+
+    function Edges{T}(list::Vector{Edge{T}}; isunique=false) where T
         if isunique
             new{T}(list)
         else
@@ -25,21 +26,40 @@ struct Edges{T}
             new{T}(edges)
         end
     end
-end
+
+    function Edges(list::Vector{Edge{T}}; isunique=false) where T
+        Edges{T}(list; isunique=isunique)
+    end
+end # struct Edges{T}
 
 struct Graph{T} <: AbstractGraph{T}
     nodes::Set{T}
     edges::Edges{T}
-    function Graph{T}() where T
-        new{T}(Set{T}(), Edges(Vector{Edge{T}}(), isunique=true))
-    end
-    function Graph(nodes::Set{T}, edges::Edges{T}) where T
+
+    function Graph{T}(nodes::Set{T}, edges::Edges{T}) where T
         new{T}(nodes, edges)
     end
-    function Graph(edges::Edges{T}) where T
-        new{T}(Set{T}(allnodes(edges)), edges)
+
+    function Graph{T}(edges::Edges{T}) where T
+        Graph{T}(Set{T}(allnodes(edges)), edges)
     end
-end
+
+    function Graph{T}(edge::Edge{T}) where T
+        Graph{T}(Edges([edge]; isunique=true))
+    end
+
+    function Graph{T}() where T
+        Graph{T}(Set{T}(), Edges(Vector{Edge{T}}(), isunique=true))
+    end
+
+    function Graph(edges::Edges{T}) where T
+        Graph{T}(edges)
+    end
+
+    function Graph(edge::Edge{T}) where T
+        Graph{T}(Edges([edge]; isunique=true))
+    end
+end # struct Graph{T} <: AbstractGraph{T}
 
 macro nodes(args...)
     esc(graph_nodes(args))
@@ -170,7 +190,7 @@ function addedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
         end
     end
     concatedges = Edges(list, isunique=true)
-    Graph(nodes, concatedges)
+    Graph{T}(nodes, concatedges)
 end
 
 function addedges!(callback, g::Graph{T}, edge::Edge{T}) where T
@@ -200,7 +220,7 @@ end
 function cutedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
     list = g.edges.list
     indices = filter(!isnothing, indexin(list, edges.list))
-    Graph(g.nodes, Edges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
+    Graph{T}(g.nodes, Edges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
 end
 
 function cutedges!(callback, g::Graph{T}, edge::Edge{T}) where T
