@@ -59,4 +59,17 @@ end
 @test Weighted([1 1⇿ 2]) isa Weighted{Int}
 @test Weighted{Int}([1 1⇿ 2]) isa Weighted{Int}
 
+w10 = Weighted([1 5im⇿ 2])
+@test w10.graph.edges.list == [1 ⇿ 2]
+@test w10.weights == [5im]
+
+struct Weight
+    value
+end
+Base.broadcastable(w::Weight) = w.value
+Base.:+(w::Weight, n::Int) = Weight(w.value + n)
+w11 = Weighted([1 Weight(5)⇿ 2], [1 Weight(-2)⇿ 2])
+@test w11.graph.edges.list == [1 ⇿ 2]
+@test w11.weights == [Weight(3)]
+
 end # module test_tutte_weighted

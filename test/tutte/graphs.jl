@@ -87,4 +87,14 @@ end
 @test Graph(1 → 2 → 3) isa Graph{Int}
 @test Graph{Int}(1 → 2 → 3) isa Graph{Int}
 
+struct User
+    name
+    point
+end
+u1 = User("u1", 10)
+u2 = User("u2", 5)
+u3 = User("u3", 1)
+g = Graph(u1 → u2 → u3)
+@test g isa Graph{User}
+
 end # module test_tutte_graphs
