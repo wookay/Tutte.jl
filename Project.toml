@@ -1,5 +1,6 @@
 name = "Tutte"
 uuid = "03681a08-6072-11e9-2981-89aa67d9ce53"
+keywords = ["graph"]
 authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
 version = "0.1.0"
 
@@ -13,3 +14,6 @@ GraphPlot = "a2cc645c-3eea-5389-862e-a155d0052231"
 
 [targets]
 test = ["Test", "Jive", "GraphPlot"]
+
+[compat]
+julia = "1"
