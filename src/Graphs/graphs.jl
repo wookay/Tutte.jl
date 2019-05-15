@@ -2,16 +2,25 @@
 
 using LightGraphs: AbstractGraph, AbstractEdge
 
+"""
+    Node
+"""
 struct Node
     id::Symbol
 end
 
+"""
+    Edge{T}
+"""
 struct Edge{T} <: AbstractEdge{T}
     op
     nodes::Tuple{T, T}
     backward::Bool
 end
 
+"""
+    Edges{T}
+"""
 struct Edges{T}
     list::Vector{Edge{T}}
 
@@ -32,6 +41,9 @@ struct Edges{T}
     end
 end # struct Edges{T}
 
+"""
+    Graph{T}
+"""
 struct Graph{T} <: AbstractGraph{T}
     nodes::Set{T}
     edges::Edges{T}
@@ -61,6 +73,9 @@ struct Graph{T} <: AbstractGraph{T}
     end
 end # struct Graph{T} <: AbstractGraph{T}
 
+"""
+    @nodes
+"""
 macro nodes(args...)
     esc(graph_nodes(args))
 end
@@ -92,26 +107,41 @@ function isless(a::Node, b::Node)
 end
 
 # ⇿  \leftrightarrowtriangle<tab>
+"""
+    ⇿
+"""
 function ⇿(a::T, b::T)::Edge{T} where T
     Edge{T}(⇿, (a, b), false)
 end
 
 # →  \rightarrow<tab>
+"""
+    →
+"""
 function →(a::T, b::T)::Edge{T} where T
     Edge{T}(→, (a, b), false)
 end
 
 # ←  \leftarrow<tab>
+"""
+    ←
+"""
 function ←(a::T, b::T)::Edge{T} where T
     Edge{T}(→, (b, a), true)
 end
 
 # ⇄  \rightleftarrows<tab>
+"""
+    ⇄
+"""
 function ⇄(a::T, b::T)::Edges{T} where T
     Edges([→(a, b), ←(a, b)], isunique=true)
 end
 
 # ⇆  \leftrightarrows<tab>
+"""
+    ⇆
+"""
 function ⇆(a::T, b::T)::Edges{T} where T
     Edges([←(a, b), →(a, b)], isunique=true)
 end
@@ -139,6 +169,9 @@ for arrow in (:⇿, :→, :←)
     end
 end
 
+"""
+    union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
+"""
 function union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
     list = Vector{Edge{T}}()
     @inbounds for arg in args
@@ -176,10 +209,16 @@ function Base.iterate(edges::Edges{T}, state = 1) where T
     iterate(edges.list, state)
 end
 
+"""
+    addedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+"""
 function addedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
     addedges(g, Edges([edge], isunique=true))
 end
 
+"""
+    addedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+"""
 function addedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
     list = Vector{Edge{T}}(g.edges.list)
     nodes = Set{T}(g.nodes)
@@ -193,10 +232,16 @@ function addedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
     Graph{T}(nodes, concatedges)
 end
 
+"""
+    addedges!(callback, g::Graph{T}, edge::Edge{T}) where T
+"""
 function addedges!(callback, g::Graph{T}, edge::Edge{T}) where T
     addedges!(callback, g, Edges([edge], isunique=true))
 end
 
+"""
+    addedges!(callback, g::Graph{T}, edges::Edges{T}) where T
+"""
 function addedges!(callback, g::Graph{T}, edges::Edges{T}) where T
     list = Vector{Edge{T}}()
     nodes = Set{T}()
@@ -213,20 +258,32 @@ function addedges!(callback, g::Graph{T}, edges::Edges{T}) where T
     end
 end
 
+"""
+    cutedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+"""
 function cutedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
     cutedges(g, Edges([edge], isunique=true))
 end
 
+"""
+    cutedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+"""
 function cutedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
     list = g.edges.list
     indices = filter(!isnothing, indexin(list, edges.list))
     Graph{T}(g.nodes, Edges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
 end
 
+"""
+    cutedges!(callback, g::Graph{T}, edge::Edge{T}) where T
+"""
 function cutedges!(callback, g::Graph{T}, edge::Edge{T}) where T
     cutedges!(callback, g, Edges([edge], isunique=true))
 end
 
+"""
+    cutedges!(callback, g::Graph{T}, edges::Edges{T}) where T
+"""
 function cutedges!(callback, g::Graph{T}, edges::Edges{T}) where T
     indices = filter(!isnothing, indexin(g.edges.list, edges.list))
     if length(g.edges.list) != length(indices)

@@ -13,7 +13,10 @@ function push_edge(list::Vector{Edge{T}}, weights, e::Edge{ET}, prev::T) where {
     end
 end
 
-struct Weighted{T, WT}
+"""
+    Weighted{T, WT}
+"""
+struct Weighted{T, WT} <: AbstractGraph{T}
     graph::Graph{T}
     weights::Vector{WT}
 
@@ -58,6 +61,10 @@ struct Weighted{T, WT}
     end
 end # struct Weighted{T, WT}
 
+function isempty(w::Weighted{T, WT}) where {T, WT}
+    isempty(w.graph)
+end
+
 function ⇿(a::A, b::B)::Edge{Union{A,B}} where {A, B}
     Edge{Union{A,B}}(⇿, (a, b), false)
 end
@@ -86,6 +93,9 @@ function ⇆(a::A, edge::Edge{B})::Edges{Union{A, B}} where {A, B}
     Edges([⇆(a, nodeof(edge, first)).list..., edge])
 end
 
+"""
+    addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
+"""
 function addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
     edges = Vector{Edge{T}}()
     weights = Vector{WT}()
@@ -115,10 +125,16 @@ function addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, W
     callback(edges, weights, nodes)
 end
 
+"""
+    cutedges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
+"""
 function cutedges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
     cutedges!(callback, w, Edges([edge], isunique=true))
 end
 
+"""
+    cutedges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
+"""
 function cutedges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
     indices = filter(!isnothing, indexin(w.graph.edges.list, edges.list))
     if length(w.graph.edges.list) != length(indices)

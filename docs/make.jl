@@ -1,5 +1,6 @@
 using Tutte
-using .Tutte: Graphs
+using .Tutte.Graphs
+using .Graphs: Graph, Edge, Edges
 using Documenter
 
 makedocs(
@@ -11,5 +12,6 @@ makedocs(
     authors = "WooKyoung Noh",
     pages = Any[
         "Home" => "index.md",
+        "Graphs" => "Graphs.md",
     ],
 )
