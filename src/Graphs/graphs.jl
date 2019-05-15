@@ -24,6 +24,11 @@ end
 struct Edges{T}
     list::Vector{Edge{T}}
 
+    # Edges{Node}([])
+    function Edges{T}(list::Vector{Any}) where T
+        new{T}(list)
+    end
+
     function Edges{T}(list::Vector{Edge{T}}; isunique=false) where T
         if isunique
             new{T}(list)
@@ -62,6 +67,10 @@ struct Graph{T} <: AbstractGraph{T}
 
     function Graph{T}() where T
         Graph{T}(Set{T}(), Edges(Vector{Edge{T}}(), isunique=true))
+    end
+
+    function Graph(nodes::Set{T}, edges::Edges{T}) where T
+        Graph{T}(nodes, edges)
     end
 
     function Graph(edges::Edges{T}) where T
@@ -301,6 +310,24 @@ function allnodes(edges::Edges{T})::Vector{T} where T
     vcat(map(edge -> collect(edge.nodes), edges.list)...)
 end
 
+function Base.show(io::IO, mime::MIME"text/plain", graph::Graph{T}) where T
+    print(io, nameof(Graph), "{", nameof(T), "}(")
+    Base.show(io, mime, graph.nodes)
+    print(io, ", ")
+    Base.show(io, mime, graph.edges)
+    print(io, ")")
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", edges::Edges{T}) where T
+    count = length(edges.list)
+    print(io, nameof(Edges), "{", nameof(T), "}([")
+    @inbounds for (idx, edge) in enumerate(edges.list)
+        Base.show(io, mime, edge)
+        count != idx && print(io, ", ")
+    end
+    print(io, "])")
+end
+
 function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
     if (edge.op === →) && edge.backward
         Base.show(io, mime, last(edge.nodes))
@@ -313,11 +340,15 @@ function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
     end
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", edges::Edges{T}) where T
-    count = length(edges.list)
-    print(io, "Edges{", T, "}([")
-    @inbounds for (idx, edge) in enumerate(edges.list)
-        Base.show(io, mime, edge)
+function Base.show(io::IO, mime::MIME"text/plain", node::Node)
+    printstyled(io, node.id, color = :normal)
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", nodes::Set{Node})
+    count = length(nodes)
+    printstyled(io, nameof(Set), "{", nameof(Node), "}([")
+    @inbounds for (idx, node) in enumerate(sort(collect(nodes)))
+        Base.show(io, mime, node)
         count != idx && print(io, ", ")
     end
     print(io, "])")

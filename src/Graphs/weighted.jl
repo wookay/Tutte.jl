@@ -59,6 +59,14 @@ struct Weighted{T, WT} <: AbstractGraph{T}
         end
         Weighted{T, WT}(args...)
     end
+
+    function Weighted{T, WT}(graph::Graph{T}, weights::Vector{WT}) where {T, WT}
+        new{T, WT}(graph, weights)
+    end
+
+    function Weighted(graph::Graph{T}, weights::Vector{WT}) where {T, WT}
+        Weighted{T, WT}(graph, weights)
+    end
 end # struct Weighted{T, WT}
 
 function isempty(w::Weighted{T, WT}) where {T, WT}
@@ -148,6 +156,19 @@ function cutedges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
         deleteat!(w.weights, indices)
         callback(list, weights, nodes)
     end
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", w::Weighted{T, WT}) where {T, WT}
+    print(io, nameof(Weighted), "{", nameof(T), ",", " ", nameof(WT), "}(")
+    Base.show(io, mime, w.graph)
+    print(io, ", [")
+    count = length(w.weights)
+    ioctx = IOContext(io, :compact => true)
+    @inbounds for (idx, weight) in enumerate(w.weights)
+        Base.show(ioctx, weight)
+        count != idx && print(io, ", ")
+    end
+    print(io, "])")
 end
 
 # module Tutte.Graphs

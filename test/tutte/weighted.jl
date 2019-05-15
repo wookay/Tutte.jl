@@ -14,6 +14,7 @@ w2 = Weighted([A 5⇿ C 2⇿ F 1⇿ G], [A 3⇿ D 4⇿ F], [B 9⇿ D 8⇿ G], [B
 @test w2.weights == [5, 2, 1, 3, 4, 9, 8, 6, 4]
 
 w3 = Weighted{Node, Int}()
+@test isempty(w3)
 @test isempty(w3.graph)
 @test isempty(w3.weights)
 
@@ -72,5 +73,6 @@ w11 = Weighted([1 Weight(5)⇿ 2], [1 Weight(-2)⇿ 2])
 @test w11 isa Weighted{Int, Weight}
 @test w11.graph.edges.list == [1 ⇿ 2]
 @test w11.weights == [Weight(3)]
+@test sprint(show, "text/plain", w11) == "Weighted{Int64, Weight}(Graph{Int64}(Set([2, 1]), Edges{Int64}([1 ⇿ 2])), [Weight(3)])"
 
 end # module test_tutte_weighted
