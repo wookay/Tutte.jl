@@ -341,12 +341,12 @@ function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", node::Node)
-    printstyled(io, node.id, color = :normal)
+    print(io, node.id)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", nodes::Set{Node})
     count = length(nodes)
-    printstyled(io, nameof(Set), "{", nameof(Node), "}([")
+    print(io, nameof(Set), "{", nameof(Node), "}([")
     @inbounds for (idx, node) in enumerate(sort(collect(nodes)))
         Base.show(io, mime, node)
         count != idx && print(io, ", ")
