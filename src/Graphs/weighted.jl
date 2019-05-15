@@ -13,17 +13,17 @@ function push_edge(list::Vector{Edge{T}}, weights, e::Edge{ET}, prev::T) where {
     end
 end
 
-struct Weighted{T}
+struct Weighted{T, WT}
     graph::Graph{T}
-    weights::Vector
+    weights::Vector{WT}
 
-    function Weighted{T}() where T
-        new{T}(Graph{T}(), [])
+    function Weighted{T, WT}() where {T, WT}
+        new{T, WT}(Graph{T}(), Vector{WT}())
     end
 
-    function Weighted{T}(args::Array{Any,2}...) where T
+    function Weighted{T, WT}(args::Array{Any,2}...) where {T, WT}
         list = Vector{Edge{T}}()
-        weights = []
+        weights = Vector{WT}()
         @inbounds for arg in args
             prev = first(arg)
             for e in arg[2:end]
@@ -41,15 +41,22 @@ struct Weighted{T}
             end
         end
         graph = Graph(Edges(list; isunique=true))
-        new{T}(graph, weights)
+        new{T, WT}(graph, weights)
     end
 
     function Weighted(args::Array{Any,2}...)
         isempty(args) && throw(ArgumentError("Weighted isempty"))
-        T = typeof(first(first(args)))
-        Weighted{T}(args...)
+        arg = first(args)
+        T = typeof(first(arg))
+        arg2 = arg[2]
+        if arg2 isa Edge
+            WT = typeof(nodeof(arg2, first))
+        elseif arg2 isa Edges
+            WT = typeof(nodeof(arg2.list[1], first))
+        end
+        Weighted{T, WT}(args...)
     end
-end # struct Weighted{T}
+end # struct Weighted{T, WT}
 
 function ⇿(a::A, b::B)::Edge{Union{A,B}} where {A, B}
     Edge{Union{A,B}}(⇿, (a, b), false)
@@ -79,11 +86,11 @@ function ⇆(a::A, edge::Edge{B})::Edges{Union{A, B}} where {A, B}
     Edges([⇆(a, nodeof(edge, first)).list..., edge])
 end
 
-function addedges!(callback, w::Weighted{T}, arg::Array{Any, 2}) where T
+function addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
     edges = Vector{Edge{T}}()
-    weights = []
+    weights = Vector{WT}()
     nodes = Set{T}()
-    x = Weighted{T}(arg)
+    x = Weighted{T, WT}(arg)
     for (edge, weight) in zip(x.graph.edges, x.weights)
         idx = indexin([edge], w.graph.edges.list)
         if [nothing] == idx
@@ -108,11 +115,11 @@ function addedges!(callback, w::Weighted{T}, arg::Array{Any, 2}) where T
     callback(edges, weights, nodes)
 end
 
-function cutedges!(callback, w::Weighted{T}, edge::Edge{T}) where T
+function cutedges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
     cutedges!(callback, w, Edges([edge], isunique=true))
 end
 
-function cutedges!(callback, w::Weighted{T}, edges::Edges{T}) where T
+function cutedges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
     indices = filter(!isnothing, indexin(w.graph.edges.list, edges.list))
     if length(w.graph.edges.list) != length(indices)
         list = w.graph.edges.list[indices]

@@ -13,7 +13,7 @@ w2 = Weighted([A 5⇿ C 2⇿ F 1⇿ G], [A 3⇿ D 4⇿ F], [B 9⇿ D 8⇿ G], [B
 @test w2.graph.edges.list == [A ⇿ C, C ⇿ F, F ⇿ G, A ⇿ D, D ⇿ F, B ⇿ D, D ⇿ G, B ⇿ E, E ⇿ G]
 @test w2.weights == [5, 2, 1, 3, 4, 9, 8, 6, 4]
 
-w3 = Weighted{Node}()
+w3 = Weighted{Node, Int}()
 @test isempty(w3.graph)
 @test isempty(w3.weights)
 
@@ -40,7 +40,7 @@ w8 = Weighted([A 1⇿ C])
 w9 = Weighted([1 -1→ 2])
 @test w9.graph.edges.list == [1 → 2]
 @test w9.weights == [-1]
-@test w9 isa Weighted{Int}
+@test w9 isa Weighted{Int, Int}
 addedges!(w9, [1 6→ 2 7→ 3]) do edges, weights, nodes
     @test edges == [1 → 2, 2 → 3]
     @test weights == [5, 7]
@@ -56,8 +56,8 @@ end
 @test w9.graph.edges.list == [2 → 3]
 @test w9.weights == [7]
 
-@test Weighted([1 1⇿ 2]) isa Weighted{Int}
-@test Weighted{Int}([1 1⇿ 2]) isa Weighted{Int}
+@test Weighted([1 1⇿ 2]) isa Weighted{Int, Int}
+@test Weighted{Int, Int}([1 1⇿ 2]) isa Weighted{Int, Int}
 
 w10 = Weighted([1 5im⇿ 2])
 @test w10.graph.edges.list == [1 ⇿ 2]
@@ -69,6 +69,7 @@ end
 Base.broadcastable(w::Weight) = w.value
 Base.:+(w::Weight, n::Int) = Weight(w.value + n)
 w11 = Weighted([1 Weight(5)⇿ 2], [1 Weight(-2)⇿ 2])
+@test w11 isa Weighted{Int, Weight}
 @test w11.graph.edges.list == [1 ⇿ 2]
 @test w11.weights == [Weight(3)]
 
