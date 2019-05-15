@@ -162,10 +162,10 @@ function Base.show(io::IO, mime::MIME"text/plain", w::Weighted{T, WT}) where {T,
     print(io, nameof(Weighted), "{", nameof(T), ",", " ", nameof(WT), "}(")
     Base.show(io, mime, w.graph)
     print(io, ", [")
-    count = length(w.weights)
     ioctx = IOContext(io, :compact => true)
+    count = length(w.weights)
     @inbounds for (idx, weight) in enumerate(w.weights)
-        Base.show(ioctx, weight)
+        Base.show(ioctx, mime, weight)
         count != idx && print(io, ", ")
     end
     print(io, "])")

@@ -312,7 +312,17 @@ end
 
 function Base.show(io::IO, mime::MIME"text/plain", graph::Graph{T}) where T
     print(io, nameof(Graph), "{", nameof(T), "}(")
-    Base.show(io, mime, graph.nodes)
+    if graph.nodes isa Set{Node}
+        Base.show(io, mime, graph.nodes)
+    else
+        print(io, "Set([")
+        count = length(graph.nodes)
+        @inbounds for (idx, node) in enumerate(graph.nodes)
+            Base.show(io, mime, node)
+            count != idx && print(io, ", ")
+        end
+        print(io, "])")
+    end
     print(io, ", ")
     Base.show(io, mime, graph.edges)
     print(io, ")")
@@ -329,14 +339,15 @@ function Base.show(io::IO, mime::MIME"text/plain", edges::Edges{T}) where T
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
+    ioctx = IOContext(io, :compact => true)
     if (edge.op === →) && edge.backward
-        Base.show(io, mime, last(edge.nodes))
+        Base.show(ioctx, mime, last(edge.nodes))
         print(io, ' ', nameof(←), ' ')
-        Base.show(io, mime, first(edge.nodes))
+        Base.show(ioctx, mime, first(edge.nodes))
     else
-        Base.show(io, mime, first(edge.nodes))
+        Base.show(ioctx, mime, first(edge.nodes))
         print(io, ' ', nameof(edge.op), ' ')
-        Base.show(io, mime, last(edge.nodes))
+        Base.show(ioctx, mime, last(edge.nodes))
     end
 end
 
@@ -346,7 +357,7 @@ end
 
 function Base.show(io::IO, mime::MIME"text/plain", nodes::Set{Node})
     count = length(nodes)
-    print(io, nameof(Set), "{", nameof(Node), "}([")
+    print(io, nameof(Set), "([")
     @inbounds for (idx, node) in enumerate(sort(collect(nodes)))
         Base.show(io, mime, node)
         count != idx && print(io, ", ")

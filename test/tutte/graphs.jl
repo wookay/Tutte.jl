@@ -28,6 +28,7 @@ G = Graph{Node}()
 G = addedges(G, A ⇿ C)
 @test G.edges == Edges([A ⇿ C])
 @test G.nodes == Set([A, C])
+@test sprint(show, "text/plain", G) == "Graph{Node}(Set([A, C]), Edges{Node}([A ⇿ C]))"
 @test !isempty(G)
 
 G2 = addedges(G, A ⇿ C → D ← F)
@@ -96,5 +97,6 @@ u2 = User("u2", 5)
 u3 = User("u3", 1)
 g = Graph(u1 → u2 → u3)
 @test g isa Graph{User}
+@test sprint(show, "text/plain", g.edges) == """Edges{User}([User("u1", 10) → User("u2", 5), User("u2", 5) → User("u3", 1)])"""
 
 end # module test_tutte_graphs
