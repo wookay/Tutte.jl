@@ -339,16 +339,15 @@ function Base.show(io::IO, mime::MIME"text/plain", edges::Edges{T}) where T
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
-    ioctx = IOContext(io, :compact => true)
     if (edge.op === →) && edge.backward
-        Base.show(ioctx, mime, last(edge.nodes))
-        print(io, ' ', nameof(←), ' ')
-        Base.show(ioctx, mime, first(edge.nodes))
+        op, l, r = ←, last, first
     else
-        Base.show(ioctx, mime, first(edge.nodes))
-        print(io, ' ', nameof(edge.op), ' ')
-        Base.show(ioctx, mime, last(edge.nodes))
+        op, l, r = edge.op, first, last
     end
+    ioctx = IOContext(io, :compact => true)
+    Base.show(ioctx, mime, l(edge.nodes))
+    print(io, ' ', nameof(op), ' ')
+    Base.show(ioctx, mime, r(edge.nodes))
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", node::Node)
