@@ -99,4 +99,8 @@ g = Graph(u1 → u2 → u3)
 @test g isa Graph{User}
 @test sprint(show, "text/plain", g.edges) == """Edges{User}([User("u1", 10) → User("u2", 5), User("u2", 5) → User("u3", 1)])"""
 
+@test (1 → 2) == (2 ← 1)
+@test (1 → 2 → 3) == (3 ← 2 ← 1)
+@test union(1 → 2, 1 → 2) == Edges([1 → 2])
+
 end # module test_tutte_graphs

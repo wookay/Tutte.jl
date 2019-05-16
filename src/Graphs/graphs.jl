@@ -103,18 +103,6 @@ function isempty(edges::Edges{T}) where T
     isempty(edges.list)
 end
 
-function nodeof(edge::Edge{T}, ::typeof(first)) where T
-    edge.backward ? edge.nodes[2] : edge.nodes[1]
-end
-
-function nodeof(edge::Edge{T}, ::typeof(last)) where T
-    edge.backward ? edge.nodes[1] : edge.nodes[2]
-end
-
-function isless(a::Node, b::Node)
-    a.id < b.id
-end
-
 # ⇿  \leftrightarrowtriangle<tab>
 """
     ⇿
@@ -178,6 +166,11 @@ for arrow in (:⇿, :→, :←)
     end
 end
 
+is_directed(::typeof(⇿)) = false
+is_directed(::typeof(→)) = true
+is_directed(::typeof(←)) = true
+inverse(::typeof(→)) = ←
+
 """
     union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
 """
@@ -196,17 +189,21 @@ function union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
 end
 
 function ==(a::Edge{T}, b::Edge{T}) where T
-    if a.op === b.op === ⇿
-        Set{T}(a.nodes) == Set{T}(b.nodes)
+    if a.op === b.op
+        if is_directed(a.op)
+            a.nodes == b.nodes
+        else
+            Set{T}(a.nodes) == Set{T}(b.nodes)
+        end
     else
-        (a.op === b.op) && (a.nodes == b.nodes)
+        false
     end
 end
 
 function ==(l::Edges{T}, r::Edges{T}) where T
     length(l.list) == length(r.list) || return false
-    a = Dict(((edge.op === ⇿) ? Set{T}(edge.nodes) : edge.nodes) => edge.op for edge in l.list)
-    b = Dict(((edge.op === ⇿) ? Set{T}(edge.nodes) : edge.nodes) => edge.op for edge in r.list)
+    a = Dict((is_directed(edge.op) ? edge.nodes : Set{T}(edge.nodes)) => edge.op for edge in l.list)
+    b = Dict((is_directed(edge.op) ? edge.nodes : Set{T}(edge.nodes)) => edge.op for edge in r.list)
     a == b
 end
 
@@ -306,6 +303,18 @@ function cutedges!(callback, g::Graph{T}, edges::Edges{T}) where T
     end
 end
 
+function isless(a::Node, b::Node)
+    a.id < b.id
+end
+
+function nodeof(edge::Edge{T}, ::typeof(first)) where T
+    edge.backward ? edge.nodes[2] : edge.nodes[1]
+end
+
+function nodeof(edge::Edge{T}, ::typeof(last)) where T
+    edge.backward ? edge.nodes[1] : edge.nodes[2]
+end
+
 function allnodes(edges::Edges{T})::Vector{T} where T
     vcat(map(edge -> collect(edge.nodes), edges.list)...)
 end
@@ -339,8 +348,8 @@ function Base.show(io::IO, mime::MIME"text/plain", edges::Edges{T}) where T
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
-    if (edge.op === →) && edge.backward
-        op, l, r = ←, last, first
+    if edge.backward
+        op, l, r = inverse(edge.op), last, first
     else
         op, l, r = edge.op, first, last
     end
