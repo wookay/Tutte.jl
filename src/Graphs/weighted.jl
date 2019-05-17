@@ -158,6 +158,10 @@ function cutedges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
     end
 end
 
+function is_directed(w::Weighted{T, WT}) where {T, WT}
+    is_directed(w.graph)
+end
+
 function Base.show(io::IO, mime::MIME"text/plain", w::Weighted{T, WT}) where {T, WT}
     print(io, nameof(Weighted), "{", nameof(T), ",", " ", nameof(WT), "}(")
     Base.show(io, mime, w.graph)

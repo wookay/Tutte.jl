@@ -30,6 +30,7 @@ end
 @test union(1 ↪ 2, 1 ↪ 2) == Edges([1 ↪ 2])
 @test (1 ↪ 2) isa Edge{Int}
 @test union(1 → 2, 1 ↪ 2) == Edges([1 → 2, 1 ↪ 2])
+@test Graphs.is_directed(union(1 → 2, 1 ↪ 2))
 
 # Weighted
 function ↪(a::A, b::B)::Edge{Union{A,B}} where {A, B}

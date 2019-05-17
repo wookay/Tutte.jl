@@ -171,6 +171,22 @@ is_directed(::typeof(→)) = true
 is_directed(::typeof(←)) = true
 inverse(::typeof(→)) = ←
 
+function is_directed(edge::Edge{T}) where T
+    is_directed(edge.op)
+end
+
+function is_directed(edges::Edges{T}) where T
+    isempty(edges) && return false
+    @inbounds for edge in edges.list
+        !is_directed(edge) && return false
+    end
+    true
+end
+
+function is_directed(g::Graph{T}) where T
+    is_directed(g.edges)
+end
+
 """
     union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
 """

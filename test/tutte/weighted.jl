@@ -17,6 +17,7 @@ w3 = Weighted{Node, Int}()
 @test isempty(w3)
 @test isempty(w3.graph)
 @test isempty(w3.weights)
+@test !Graphs.is_directed(w3)
 
 w4 = Weighted([A 1→ C], [A 2→ C])
 @test w4.graph.edges.list == [A → C]
@@ -56,6 +57,7 @@ cutedges!(w9, 1 → 2) do edges, weights, nodes
 end
 @test w9.graph.edges.list == [2 → 3]
 @test w9.weights == [7]
+@test Graphs.is_directed(w9)
 
 @test Weighted([1 1⇿ 2]) isa Weighted{Int, Int}
 @test Weighted{Int, Int}([1 1⇿ 2]) isa Weighted{Int, Int}
@@ -63,6 +65,7 @@ end
 w10 = Weighted([1 5im⇿ 2])
 @test w10.graph.edges.list == [1 ⇿ 2]
 @test w10.weights == [5im]
+@test !Graphs.is_directed(w10)
 
 struct Weight
     value
