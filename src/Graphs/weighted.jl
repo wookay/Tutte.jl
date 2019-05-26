@@ -102,9 +102,9 @@ function ⇆(a::A, edge::Edge{B})::Edges{Union{A, B}} where {A, B}
 end
 
 """
-    addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
+    add_edges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
 """
-function addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
+function add_edges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
     edges = Vector{Edge{T}}()
     weights = Vector{WT}()
     nodes = Set{T}()
@@ -134,16 +134,16 @@ function addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, W
 end
 
 """
-    cutedges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
+    remove_edges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
 """
-function cutedges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
-    cutedges!(callback, w, Edges([edge], isunique=true))
+function remove_edges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
+    remove_edges!(callback, w, Edges([edge], isunique=true))
 end
 
 """
-    cutedges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
+    remove_edges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
 """
-function cutedges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
+function remove_edges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
     indices = filter(!isnothing, indexin(w.graph.edges.list, edges.list))
     if length(w.graph.edges.list) != length(indices)
         list = w.graph.edges.list[indices]

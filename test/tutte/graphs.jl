@@ -1,7 +1,7 @@
 module test_tutte_graphs
 
 using Test
-using Tutte.Graphs # Graph Edge Edges Node @nodes ⇿ → ←  addedges cutedges addedges! cutedges!
+using Tutte.Graphs # Graph Edge Edges Node @nodes ⇿ → ←  add_edges remove_edges add_edges! remove_edges!
 
 G = Graph{Node}()
 @nodes A B C D E F
@@ -25,20 +25,20 @@ G = Graph{Node}()
 @test H == Node(:H)
 @test H.id === :H
 
-G = addedges(G, A ⇿ C)
+G = add_edges(G, A ⇿ C)
 @test G.edges == Edges([A ⇿ C])
 @test G.nodes == Set([A, C])
 @test sprint(show, "text/plain", G) == "Graph{Node}(Set([A, C]), Edges{Node}([A ⇿ C]))"
 @test !isempty(G)
 @test length(G.edges) == 1
 
-G2 = addedges(G, A ⇿ C → D ← F)
+G2 = add_edges(G, A ⇿ C → D ← F)
 @test G.edges == Edges([A ⇿ C])
 @test G.nodes == Set([A, C])
 @test G2.edges == Edges([A ⇿ C, C → D, D ← F])
 @test G2.nodes == Set([A, C, D, F])
 
-G3 = cutedges(G2, A ⇿ C)
+G3 = remove_edges(G2, A ⇿ C)
 @test G.edges == Edges([A ⇿ C])
 @test G.nodes == Set([A, C])
 @test G2.edges == Edges([A ⇿ C, C → D, D ← F])
@@ -50,7 +50,7 @@ G3 = cutedges(G2, A ⇿ C)
 @test (1 ⇿ 2 ⇿ 3) isa Edges
 
 G = Graph{Int}()
-G2 = addedges(G, 1 ⇿ 3 → 4 ← 5)
+G2 = add_edges(G, 1 ⇿ 3 → 4 ← 5)
 @test G2.edges == Edges([1 ⇿ 3, 3 → 4, 4 ← 5])
 @test G2.nodes == Set([1, 3, 4, 5])
 
@@ -59,19 +59,19 @@ G2 = addedges(G, 1 ⇿ 3 → 4 ← 5)
 @test (1 ⇆  2 ⇿ 3) == Edges([1 ← 2, 1 → 2, 2 ⇿ 3])
 
 G = Graph{Node}()
-addedges!(G, A ⇿ C) do edges, nodes
+add_edges!(G, A ⇿ C) do edges, nodes
     @test edges == [A ⇿ C]
     @test nodes == Set([A, C])
 end
 @test G.edges == Edges([A ⇿ C])
 @test G.nodes == Set([A, C])
-addedges!(G, A ⇿ C → D ← F) do edges, nodes
+add_edges!(G, A ⇿ C → D ← F) do edges, nodes
     @test edges == [C → D, F → D]
     @test nodes == Set([D, F, C])
 end
 @test G.edges == Edges([A ⇿ C, C → D, D ← F])
 @test G.nodes == Set([A, C, D, F])
-cutedges!(G, A ⇿ C) do edges, nodes
+remove_edges!(G, A ⇿ C) do edges, nodes
     @test edges == [A ⇿ C]
     @test nodes == Set([A, C])
 end

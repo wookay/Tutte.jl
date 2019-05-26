@@ -46,7 +46,7 @@ w = Weighted([A 3↪ B 5↪ C])
 @test w.weights == [3, 5]
 @test sprint(show, "text/plain", w) == "Weighted{Node, Int64}(Graph{Node}(Set([A, B, C]), Edges{Node}([A ↪ B, B ↪ C])), [3, 5])"
 
-addedges!(w, [A -1↪ B 1↪ D]) do edges, weights, nodes
+add_edges!(w, [A -1↪ B 1↪ D]) do edges, weights, nodes
     @test edges == [A ↪  B, B ↪  D]
     @test weights == [2, 1]
     @test nodes == Set([A, B, D])
@@ -54,7 +54,7 @@ end
 @test w.graph.edges.list == [A ↪ B, B↪ C, B ↪  D]
 @test w.weights == [2, 5, 1]
 
-cutedges!(w, A ↪ B) do edges, weights, nodes
+remove_edges!(w, A ↪ B) do edges, weights, nodes
     @test edges == [A ↪ B]
     @test weights == [2]
     @test nodes == Set([A, B])

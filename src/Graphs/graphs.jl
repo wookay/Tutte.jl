@@ -236,16 +236,16 @@ function Base.length(edges::Edges{T}) where T
 end
 
 """
-    addedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+    add_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
 """
-function addedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
-    addedges(g, Edges([edge], isunique=true))
+function add_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+    add_edges(g, Edges([edge], isunique=true))
 end
 
 """
-    addedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+    add_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
 """
-function addedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+function add_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
     list = Vector{Edge{T}}(g.edges.list)
     nodes = Set{T}(g.nodes)
     @inbounds for edge in edges.list
@@ -259,16 +259,16 @@ function addedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
 end
 
 """
-    addedges!(callback, g::Graph{T}, edge::Edge{T}) where T
+    add_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
 """
-function addedges!(callback, g::Graph{T}, edge::Edge{T}) where T
-    addedges!(callback, g, Edges([edge], isunique=true))
+function add_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
+    add_edges!(callback, g, Edges([edge], isunique=true))
 end
 
 """
-    addedges!(callback, g::Graph{T}, edges::Edges{T}) where T
+    add_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
 """
-function addedges!(callback, g::Graph{T}, edges::Edges{T}) where T
+function add_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
     list = Vector{Edge{T}}()
     nodes = Set{T}()
     @inbounds for edge in edges.list
@@ -285,32 +285,32 @@ function addedges!(callback, g::Graph{T}, edges::Edges{T}) where T
 end
 
 """
-    cutedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+    remove_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
 """
-function cutedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
-    cutedges(g, Edges([edge], isunique=true))
+function remove_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+    remove_edges(g, Edges([edge], isunique=true))
 end
 
 """
-    cutedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+    remove_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
 """
-function cutedges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+function remove_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
     list = g.edges.list
     indices = filter(!isnothing, indexin(list, edges.list))
     Graph{T}(g.nodes, Edges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
 end
 
 """
-    cutedges!(callback, g::Graph{T}, edge::Edge{T}) where T
+    remove_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
 """
-function cutedges!(callback, g::Graph{T}, edge::Edge{T}) where T
-    cutedges!(callback, g, Edges([edge], isunique=true))
+function remove_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
+    remove_edges!(callback, g, Edges([edge], isunique=true))
 end
 
 """
-    cutedges!(callback, g::Graph{T}, edges::Edges{T}) where T
+    remove_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
 """
-function cutedges!(callback, g::Graph{T}, edges::Edges{T}) where T
+function remove_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
     indices = filter(!isnothing, indexin(g.edges.list, edges.list))
     if length(g.edges.list) != length(indices)
         list = g.edges.list[indices]
