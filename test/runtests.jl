@@ -1,2 +1,3 @@
 using Jive
-runtests(@__DIR__, skip=["profile.jl"])
+skips = ["tutte/modular_decomposition.jl"]
+runtests(@__DIR__, skip=["profile.jl", skips...])

@@ -30,6 +30,7 @@ G = addedges(G, A ⇿ C)
 @test G.nodes == Set([A, C])
 @test sprint(show, "text/plain", G) == "Graph{Node}(Set([A, C]), Edges{Node}([A ⇿ C]))"
 @test !isempty(G)
+@test length(G.edges) == 1
 
 G2 = addedges(G, A ⇿ C → D ← F)
 @test G.edges == Edges([A ⇿ C])

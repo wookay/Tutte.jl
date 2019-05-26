@@ -70,7 +70,7 @@ w10 = Weighted([1 5im⇿ 2])
 struct Weight
     value
 end
-Base.broadcastable(w::Weight) = w.value
+Base.:+(a::Weight, b::Weight) = Weight(a.value + b.value)
 Base.:+(w::Weight, n::Int) = Weight(w.value + n)
 w11 = Weighted([1 Weight(5)⇿ 2], [1 Weight(-2)⇿ 2])
 @test w11 isa Weighted{Int, Weight}

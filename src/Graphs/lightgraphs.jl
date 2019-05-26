@@ -1,77 +1,81 @@
 # module Tutte.Graphs
 
-using LightGraphs.SimpleGraphs: SimpleGraphs, SimpleGraph, SimpleDiGraph, LGFormat, add_edge!, vertices, edges, savegraph, loadgraph
+using LightGraphs.SimpleGraphs: SimpleGraphs, SimpleGraph, SimpleDiGraph, LGFormat
 
-struct IDMap{T}
-    vertices::Vector{T}
-    function IDMap(g::Graph{T}) where T
-        sortednodes = sort(collect(g.nodes))
-        new{T}(sortednodes)
-    end
-end
-
-function Base.getindex(idmap::IDMap{T}, nth::Integer)::T where T
-    idmap.vertices[nth]
-end
-
-function indexof(idmap::IDMap{T}, node::T)::Union{Integer, Nothing} where T
-    for (i, vertice) in enumerate(idmap.vertices)
-        vertice == node && return i
-    end
-    return nothing
-end
-
-function SimpleGraph(nodes::Set{T}, edges::Edges{T})::SimpleGraph{Int} where T
-    vertices = sort(collect(nodes))
-    len = length(vertices)
-    dict = Dict(zip(vertices, 1:len))
-    r = SimpleGraph(len)
+# SimpleGraph
+function simplegraph_nodes(vertices::Vector{T}, edges::Edges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+    r = SimpleGraph(length(vertices))
     for edge in edges.list
-        add_edge!(r, getindex.(Ref(dict), edge.nodes)...)
+        SimpleGraphs.add_edge!(r, indexin(edge.nodes, vertices)...)
     end
-    r
+    (r, vertices)
 end
 
-function SimpleGraph(g::Graph)::SimpleGraph{Int}
-    SimpleGraph(g.nodes, g.edges)
+function simplegraph_nodes(edges::Edges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+    vertices = sort(collect(allnodes(edges)))
+    simplegraph_nodes(vertices, edges)
 end
 
-function SimpleGraph(edges::Edges)::SimpleGraph{Int}
-    SimpleGraph(Set(allnodes(edges)), edges)
+function simplegraph_nodes(g::Graph{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+    simplegraph_nodes(g.edges)
 end
 
-function SimpleDiGraph(nodes::Set{T}, edges::Edges{T})::SimpleDiGraph{Int} where T
-    vertices = sort(collect(nodes))
-    len = length(vertices)
-    dict = Dict(zip(vertices, 1:len))
-    r = SimpleDiGraph(len)
+# SimpleDiGraph
+function simpledigraph_nodes(vertices::Vector{T}, edges::Edges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+    r = SimpleDiGraph(length(vertices))
     for edge in edges.list
-        add_edge!(r, getindex.(Ref(dict), edge.nodes)...)
+        SimpleGraphs.add_edge!(r, indexin(edge.nodes, vertices)...)
     end
-    r
+    (r, vertices)
 end
 
-function SimpleDiGraph(g::Graph)::SimpleDiGraph{Int}
-    SimpleDiGraph(g.nodes, g.edges)
+function simpledigraph_nodes(edges::Edges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+    vertices = sort(collect(allnodes(edges)))
+    simpledigraph_nodes(vertices, edges)
 end
 
-function SimpleDiGraph(edges::Edges)::SimpleDiGraph{Int}
-    SimpleDiGraph(Set(allnodes(edges)), edges)
+function simpledigraph_nodes(g::Graph{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+    simpledigraph_nodes(g.edges)
 end
 
-function Graph(sg::SimpleGraph{T}) where T
-    Graph{T}(Set{T}(collect(vertices(sg))), Edges([Edge(⇿, (edge.src, edge.dst), false) for edge in edges(sg)]))
+# Graph{T}
+function Graph{T}(sg::SimpleGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
+    Graph{T}(Set{T}(nodes), Edges([Edge(⇿, (nodes[edge.src], nodes[edge.dst]), false) for edge in SimpleGraphs.edges(sg)]))
 end
 
-function Graph(sg::SimpleDiGraph{T}) where T
-    Graph{T}(Set{T}(collect(vertices(sg))), Edges([Edge(→, (edge.src, edge.dst), false) for edge in edges(sg)]))
+function Graph(sg::SimpleGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
+    Graph{T}(sg, nodes)
 end
 
-function SimpleGraphs.savegraph(io::IO, g::AbstractGraph)
+function Graph{T}(sg::SimpleGraph{ST})::Graph{T} where {T, ST}
+    Graph{T}(sg, Vector{T}(SimpleGraphs.vertices(sg)))
+end
+
+function Graph(sg::SimpleGraph{T})::Graph{T} where T
+    Graph{T}(sg)
+end
+
+function Graph{T}(sg::SimpleDiGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
+    Graph{T}(Set{T}(nodes), Edges([Edge(→, (nodes[edge.src], nodes[edge.dst]), false) for edge in SimpleGraphs.edges(sg)]))
+end
+
+function Graph{T}(sg::SimpleDiGraph{ST})::Graph{T} where {T, ST}
+    Graph{T}(sg, Vector{T}(SimpleGraphs.vertices(sg)))
+end
+
+function Graph(sg::SimpleDiGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
+    Graph{T}(sg, nodes)
+end
+
+function Graph(sg::SimpleDiGraph{T})::Graph{T} where T
+    Graph{T}(sg)
+end
+
+function savegraph(io::IO, g::AbstractGraph)
     SimpleGraphs.savegraph(io, g, LGFormat())
 end
 
-function SimpleGraphs.loadgraph(io::IO)
+function loadgraph(io::IO)
     SimpleGraphs.loadgraph(io, "graph", LGFormat())
 end
 

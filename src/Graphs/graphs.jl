@@ -58,7 +58,7 @@ struct Graph{T} <: AbstractGraph{T}
     end
 
     function Graph{T}(edges::Edges{T}) where T
-        Graph{T}(Set{T}(allnodes(edges)), edges)
+        Graph{T}(allnodes(edges), edges)
     end
 
     function Graph{T}(edge::Edge{T}) where T
@@ -231,6 +231,10 @@ function Base.iterate(edges::Edges{T}, state = 1) where T
     iterate(edges.list, state)
 end
 
+function Base.length(edges::Edges{T}) where T
+    length(edges.list)
+end
+
 """
     addedges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
 """
@@ -331,8 +335,8 @@ function nodeof(edge::Edge{T}, ::typeof(last)) where T
     edge.backward ? edge.nodes[1] : edge.nodes[2]
 end
 
-function allnodes(edges::Edges{T})::Vector{T} where T
-    vcat(map(edge -> collect(edge.nodes), edges.list)...)
+function allnodes(edges::Edges{T})::Set{T} where T
+    Set{T}(vcat(map(edge -> collect(edge.nodes), edges.list)...))
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", graph::Graph{T}) where T

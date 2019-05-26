@@ -4,12 +4,12 @@ function push_edge(list::Vector{Edge{T}}, weights, e::Edge{ET}, prev::T) where {
     weight = nodeof(e, first)
     second = nodeof(e, last)
     edge = Edge{T}(e.op, e.backward ? (second, prev) : (prev, second), e.backward)
-    idx = indexin([edge], list)
-    if [nothing] == idx
+    idx = findfirst(==(edge), list)
+    if idx === nothing
         push!(list, edge)
         push!(weights, weight)
     else
-        weights[idx] .+= weight
+        weights[idx] += weight
     end
 end
 
@@ -110,8 +110,8 @@ function addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, W
     nodes = Set{T}()
     x = Weighted{T, WT}(arg)
     for (edge, weight) in zip(x.graph.edges, x.weights)
-        idx = indexin([edge], w.graph.edges.list)
-        if [nothing] == idx
+        idx = findfirst(==(edge), w.graph.edges.list)
+        if idx === nothing
             push!(w.graph.edges.list, edge)
             push!(w.weights, weight)
             push!(w.graph.nodes, edge.nodes...)
@@ -119,14 +119,14 @@ function addedges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, W
             push!(weights, weight)
             push!(nodes, edge.nodes...)
         else
-            w.weights[idx] .+= weight
-            c_idx = indexin([edge], edges)
-            if [nothing] == c_idx
+            w.weights[idx] += weight
+            c_idx = findfirst(==(edge), edges)
+            if c_idx === nothing
                 push!(edges, edge)
                 append!(weights, w.weights[idx])
                 push!(nodes, edge.nodes...)
             else
-                weights[c_idx] .= w.weights[idx]
+                weights[c_idx] = w.weights[idx]
             end
         end
     end
