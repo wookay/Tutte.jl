@@ -1,6 +1,7 @@
 # module Tutte.Graphs
 
 using LightGraphs: AbstractGraph, AbstractEdge
+using Base: Fix2
 
 """
     Node
@@ -93,13 +94,11 @@ function graph_nodes(s)
     :(($(s...),) = $(map(id -> Node(id), s)))
 end
 
-import Base: ==, union, isempty, isless
-
-function isempty(g::Graph{T}) where T
+function Base.isempty(g::Graph{T}) where T
     isempty(g.nodes) && isempty(g.edges)
 end
 
-function isempty(edges::Edges{T}) where T
+function Base.isempty(edges::Edges{T}) where T
     isempty(edges.list)
 end
 
@@ -169,7 +168,9 @@ end
 is_directed(::typeof(⇿)) = false
 is_directed(::typeof(→)) = true
 is_directed(::typeof(←)) = true
+inverse(::typeof(⇿)) = ⇿
 inverse(::typeof(→)) = ←
+inverse(::typeof(←)) = →
 
 function is_directed(edge::Edge{T}) where T
     is_directed(edge.op)
@@ -190,7 +191,7 @@ end
 """
     union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
 """
-function union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
+function Base.union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
     list = Vector{Edge{T}}()
     @inbounds for arg in args
         if arg isa Edge
@@ -204,7 +205,7 @@ function union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
     Edges(list, isunique=true)
 end
 
-function ==(a::Edge{T}, b::Edge{T}) where T
+function Base.:(==)(a::Edge{T}, b::Edge{T}) where T
     if a.op === b.op
         if is_directed(a.op)
             a.nodes == b.nodes
@@ -216,14 +217,14 @@ function ==(a::Edge{T}, b::Edge{T}) where T
     end
 end
 
-function ==(l::Edges{T}, r::Edges{T}) where T
+function Base.:(==)(l::Edges{T}, r::Edges{T}) where T
     length(l.list) == length(r.list) || return false
     a = Dict((is_directed(edge.op) ? edge.nodes : Set{T}(edge.nodes)) => edge.op for edge in l.list)
     b = Dict((is_directed(edge.op) ? edge.nodes : Set{T}(edge.nodes)) => edge.op for edge in r.list)
     a == b
 end
 
-function ==(l::Graph{T}, r::Graph{T}) where T
+function Base.:(==)(l::Graph{T}, r::Graph{T}) where T
     l.nodes == r.nodes && l.edges == r.edges
 end
 
@@ -233,6 +234,14 @@ end
 
 function Base.length(edges::Edges{T}) where T
     length(edges.list)
+end
+
+function Base.push!(edges::Edges{T}, edge::Edge{T}) where T
+    push!(edges.list, edge)
+end
+
+function Base.empty(::Edges{T}) where T
+    Edges{T}([])
 end
 
 """
@@ -323,7 +332,7 @@ function remove_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
     end
 end
 
-function isless(a::Node, b::Node)
+function Base.isless(a::Node, b::Node)
     a.id < b.id
 end
 
@@ -391,6 +400,39 @@ function Base.show(io::IO, mime::MIME"text/plain", nodes::Set{Node})
         count != idx && print(io, ", ")
     end
     print(io, "])")
+end
+
+⇿(node::T) where T = Fix2(⇿, node)
+→(node::T) where T = Fix2(→, node)
+←(node::T) where T = Fix2(←, node)
+
+function mapfilter(pred, f, itr::Vector{Edge{T}}, res::Vector{Edge{T}}) where T
+    @inbounds for edge in itr
+        if is_directed(pred.f)
+            if pred.f === edge.op
+                node = first(edge.nodes)
+            else
+                node = last(edge.nodes)
+            end
+            pred(node) == edge && f(res, edge)
+        else
+            for node in edge.nodes
+                if pred(node) == edge
+                    f(res, edge)
+                    break
+                end
+            end
+        end
+    end
+    res
+end
+
+function Base.filter(f::Fix2, list::Vector{Edge{T}}) where T
+    mapfilter(f, push!, list, empty(list))
+end
+
+function Base.filter(f::Fix2, edges::Edges{T}) where T
+    Edges{T}(mapfilter(f, push!, edges.list, empty(edges.list)))
 end
 
 # module Tutte.Graphs

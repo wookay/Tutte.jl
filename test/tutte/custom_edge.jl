@@ -12,6 +12,7 @@ end
 Graphs.is_directed(::typeof(↪)) = true
 Graphs.is_directed(::typeof(↩)) = true
 Graphs.inverse(::typeof(↪)) = ↩
+Graphs.inverse(::typeof(↩)) = ↪
 for arrow in (:↪ , :↩ )
     @eval function ($arrow)(a::T, edges::Edges{T})::Edges where T
         edge = first(edges.list)

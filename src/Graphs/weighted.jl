@@ -69,7 +69,7 @@ struct Weighted{T, WT} <: AbstractGraph{T}
     end
 end # struct Weighted{T, WT}
 
-function isempty(w::Weighted{T, WT}) where {T, WT}
+function Base.isempty(w::Weighted{T, WT}) where {T, WT}
     isempty(w.graph)
 end
 

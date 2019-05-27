@@ -1,5 +1,4 @@
-using Jive
-@useinside module test_tutte_algebraic
+module test_tutte_algebraic
 
 using Test
 using Tutte.Graphs # Graph ⇿
