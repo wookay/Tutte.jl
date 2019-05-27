@@ -81,6 +81,7 @@ struct Graph{T} <: AbstractGraph{T}
     function Graph(edge::Edge{T}) where T
         Graph{T}(Edges([edge]; isunique=true))
     end
+
 end # struct Graph{T} <: AbstractGraph{T}
 
 """
@@ -242,6 +243,10 @@ end
 
 function Base.empty(::Edges{T}) where T
     Edges{T}([])
+end
+
+function Base.empty!(edges::Edges{T}) where T
+    empty!(edges.list)
 end
 
 """
@@ -433,6 +438,22 @@ end
 
 function Base.filter(f::Fix2, edges::Edges{T}) where T
     Edges{T}(mapfilter(f, push!, edges.list, empty(edges.list)))
+end
+
+function Base.replace(graph::Graph{GT}, vertices::Vector{T})::Graph{T} where {GT, T}
+    sortednodes = sort(collect(graph.nodes))
+    list = [Edge{T}(edge.op, tuple(vertices[indexin(edge.nodes, sortednodes)]...), edge.backward) for edge in graph.edges.list]
+    Graph{T}(Set{T}(vertices), Edges{T}(list))
+end
+
+function Base.replace(graph::Graph{T}, pairs::Pair{T, T}...)::Graph{T} where T
+    nodes = replace(graph.nodes, pairs...)
+    Graph{T}(nodes, replace(graph.edges, pairs...))
+end
+
+function Base.replace(edges::Edges{T}, pairs::Pair{T, T}...)::Edges{T} where T
+    list = [Edge{T}(edge.op, tuple(replace(collect(edge.nodes), pairs...)...), edge.backward) for edge in edges.list]
+    Edges{T}(list)
 end
 
 # module Tutte.Graphs
