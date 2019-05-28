@@ -1,6 +1,6 @@
 using Tutte
 using .Tutte.Graphs
-using .Graphs: Graph, Edge, Edges
+using .Graphs: WTGraph, WTEdge, WTEdges
 using Documenter
 
 makedocs(

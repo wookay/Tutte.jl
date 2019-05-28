@@ -4,37 +4,37 @@ using LightGraphs: AbstractGraph, AbstractEdge
 using Base: Fix2
 
 """
-    Node
+    WTNode
 """
-struct Node
+struct WTNode
     id::Symbol
 end
 
 """
-    Edge{T}
+    WTEdge{T}
 """
-struct Edge{T} <: AbstractEdge{T}
-    op
+struct WTEdge{T} <: AbstractEdge{T}
+    op::Function
     nodes::Tuple{T, T}
     backward::Bool
 end
 
 """
-    Edges{T}
+    WTEdges{T}
 """
-struct Edges{T}
-    list::Vector{Edge{T}}
+struct WTEdges{T}
+    list::Vector{WTEdge{T}}
 
-    # Edges{Node}([])
-    function Edges{T}(list::Vector{Any}) where T
+    # WTEdges{WTNode}([])
+    function WTEdges{T}(list::Vector{Any}) where T
         new{T}(list)
     end
 
-    function Edges{T}(list::Vector{Edge{T}}; isunique=false) where T
+    function WTEdges{T}(list::Vector{WTEdge{T}}; isunique=false) where T
         if isunique
             new{T}(list)
         else
-            edges = Vector{Edge{T}}()
+            edges = Vector{WTEdge{T}}()
             @inbounds for edge in list
                 !(edge in edges) && push!(edges, edge)
             end
@@ -42,47 +42,47 @@ struct Edges{T}
         end
     end
 
-    function Edges(list::Vector{Edge{T}}; isunique=false) where T
-        Edges{T}(list; isunique=isunique)
+    function WTEdges(list::Vector{WTEdge{T}}; isunique=false) where T
+        WTEdges{T}(list; isunique=isunique)
     end
-end # struct Edges{T}
+end # struct WTEdges{T}
 
 """
-    Graph{T}
+    WTGraph{T}
 """
-struct Graph{T} <: AbstractGraph{T}
+struct WTGraph{T} <: AbstractGraph{T}
     nodes::Set{T}
-    edges::Edges{T}
+    edges::WTEdges{T}
 
-    function Graph{T}(nodes::Set{T}, edges::Edges{T}) where T
+    function WTGraph{T}(nodes::Set{T}, edges::WTEdges{T}) where T
         new{T}(nodes, edges)
     end
 
-    function Graph{T}(edges::Edges{T}) where T
-        Graph{T}(allnodes(edges), edges)
+    function WTGraph{T}(edges::WTEdges{T}) where T
+        WTGraph{T}(allnodes(edges), edges)
     end
 
-    function Graph{T}(edge::Edge{T}) where T
-        Graph{T}(Edges([edge]; isunique=true))
+    function WTGraph{T}(edge::WTEdge{T}) where T
+        WTGraph{T}(WTEdges([edge]; isunique=true))
     end
 
-    function Graph{T}() where T
-        Graph{T}(Set{T}(), Edges(Vector{Edge{T}}(), isunique=true))
+    function WTGraph{T}() where T
+        WTGraph{T}(Set{T}(), WTEdges(Vector{WTEdge{T}}(), isunique=true))
     end
 
-    function Graph(nodes::Set{T}, edges::Edges{T}) where T
-        Graph{T}(nodes, edges)
+    function WTGraph(nodes::Set{T}, edges::WTEdges{T}) where T
+        WTGraph{T}(nodes, edges)
     end
 
-    function Graph(edges::Edges{T}) where T
-        Graph{T}(edges)
+    function WTGraph(edges::WTEdges{T}) where T
+        WTGraph{T}(edges)
     end
 
-    function Graph(edge::Edge{T}) where T
-        Graph{T}(Edges([edge]; isunique=true))
+    function WTGraph(edge::WTEdge{T}) where T
+        WTGraph{T}(WTEdges([edge]; isunique=true))
     end
 
-end # struct Graph{T} <: AbstractGraph{T}
+end # struct WTGraph{T} <: AbstractGraph{T}
 
 """
     @nodes
@@ -92,14 +92,14 @@ macro nodes(args...)
 end
 
 function graph_nodes(s)
-    :(($(s...),) = $(map(id -> Node(id), s)))
+    :(($(s...),) = $(map(id -> WTNode(id), s)))
 end
 
-function Base.isempty(g::Graph{T}) where T
+function Base.isempty(g::WTGraph{T}) where T
     isempty(g.nodes) && isempty(g.edges)
 end
 
-function Base.isempty(edges::Edges{T}) where T
+function Base.isempty(edges::WTEdges{T}) where T
     isempty(edges.list)
 end
 
@@ -107,62 +107,62 @@ end
 """
     ⇿
 """
-function ⇿(a::T, b::T)::Edge{T} where T
-    Edge{T}(⇿, (a, b), false)
+function ⇿(a::T, b::T)::WTEdge{T} where T
+    WTEdge{T}(⇿, (a, b), false)
 end
 
 # →  \rightarrow<tab>
 """
     →
 """
-function →(a::T, b::T)::Edge{T} where T
-    Edge{T}(→, (a, b), false)
+function →(a::T, b::T)::WTEdge{T} where T
+    WTEdge{T}(→, (a, b), false)
 end
 
 # ←  \leftarrow<tab>
 """
     ←
 """
-function ←(a::T, b::T)::Edge{T} where T
-    Edge{T}(→, (b, a), true)
+function ←(a::T, b::T)::WTEdge{T} where T
+    WTEdge{T}(→, (b, a), true)
 end
 
 # ⇄  \rightleftarrows<tab>
 """
     ⇄
 """
-function ⇄(a::T, b::T)::Edges{T} where T
-    Edges([→(a, b), ←(a, b)], isunique=true)
+function ⇄(a::T, b::T)::WTEdges{T} where T
+    WTEdges([→(a, b), ←(a, b)], isunique=true)
 end
 
 # ⇆  \leftrightarrows<tab>
 """
     ⇆
 """
-function ⇆(a::T, b::T)::Edges{T} where T
-    Edges([←(a, b), →(a, b)], isunique=true)
+function ⇆(a::T, b::T)::WTEdges{T} where T
+    WTEdges([←(a, b), →(a, b)], isunique=true)
 end
 
-function ⇄(a::T, edge::Edge{T})::Edges{T} where T
-    Edges([⇄(a, nodeof(edge, first)).list..., edge])
+function ⇄(a::T, edge::WTEdge{T})::WTEdges{T} where T
+    WTEdges([⇄(a, nodeof(edge, first)).list..., edge])
 end
 
-function ⇆(a::T, edge::Edge{T})::Edges{T} where T
-    Edges([⇆(a, nodeof(edge, first)).list..., edge])
+function ⇆(a::T, edge::WTEdge{T})::WTEdges{T} where T
+    WTEdges([⇆(a, nodeof(edge, first)).list..., edge])
 end
 
 for arrow in (:⇿, :→, :←)
-    @eval function ($arrow)(a::T, edges::Edges{T})::Edges where T
+    @eval function ($arrow)(a::T, edges::WTEdges{T})::WTEdges where T
         edge = first(edges.list)
-        Edges([$arrow(a, nodeof(edge, first)), edges.list...])
+        WTEdges([$arrow(a, nodeof(edge, first)), edges.list...])
     end
 
-    @eval function ($arrow)(a::T, edge::Edge{T})::Edges where T
-        Edges([$arrow(a, nodeof(edge, first)), edge])
+    @eval function ($arrow)(a::T, edge::WTEdge{T})::WTEdges where T
+        WTEdges([$arrow(a, nodeof(edge, first)), edge])
     end
 
-    @eval function ($arrow)(edge::Edge{T}, b::T)::Edges where T
-        Edges([edge, $arrow(nodeof(edge, last), b)])
+    @eval function ($arrow)(edge::WTEdge{T}, b::T)::WTEdges where T
+        WTEdges([edge, $arrow(nodeof(edge, last), b)])
     end
 end
 
@@ -173,11 +173,11 @@ inverse(::typeof(⇿)) = ⇿
 inverse(::typeof(→)) = ←
 inverse(::typeof(←)) = →
 
-function is_directed(edge::Edge{T}) where T
+function is_directed(edge::WTEdge{T}) where T
     is_directed(edge.op)
 end
 
-function is_directed(edges::Edges{T}) where T
+function is_directed(edges::WTEdges{T}) where T
     isempty(edges) && return false
     @inbounds for edge in edges.list
         !is_directed(edge) && return false
@@ -185,28 +185,28 @@ function is_directed(edges::Edges{T}) where T
     true
 end
 
-function is_directed(g::Graph{T}) where T
+function is_directed(g::WTGraph{T}) where T
     is_directed(g.edges)
 end
 
 """
-    union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
+    union(args::Union{WTEdge{T}, WTEdges{T}}...)::WTEdges{T} where T
 """
-function Base.union(args::Union{Edge{T}, Edges{T}}...)::Edges{T} where T
-    list = Vector{Edge{T}}()
+function Base.union(args::Union{WTEdge{T}, WTEdges{T}}...)::WTEdges{T} where T
+    list = Vector{WTEdge{T}}()
     @inbounds for arg in args
-        if arg isa Edge
+        if arg isa WTEdge
             !(arg in list) && push!(list, arg)
-        elseif arg isa Edges
+        elseif arg isa WTEdges
             for edge in arg.list
                 !(edge in list) && push!(list, edge)
             end
         end
     end
-    Edges(list, isunique=true)
+    WTEdges(list, isunique=true)
 end
 
-function Base.:(==)(a::Edge{T}, b::Edge{T}) where T
+function Base.:(==)(a::WTEdge{T}, b::WTEdge{T}) where T
     if a.op === b.op
         if is_directed(a.op)
             a.nodes == b.nodes
@@ -218,49 +218,49 @@ function Base.:(==)(a::Edge{T}, b::Edge{T}) where T
     end
 end
 
-function Base.:(==)(l::Edges{T}, r::Edges{T}) where T
+function Base.:(==)(l::WTEdges{T}, r::WTEdges{T}) where T
     length(l.list) == length(r.list) || return false
     a = Dict((is_directed(edge.op) ? edge.nodes : Set{T}(edge.nodes)) => edge.op for edge in l.list)
     b = Dict((is_directed(edge.op) ? edge.nodes : Set{T}(edge.nodes)) => edge.op for edge in r.list)
     a == b
 end
 
-function Base.:(==)(l::Graph{T}, r::Graph{T}) where T
+function Base.:(==)(l::WTGraph{T}, r::WTGraph{T}) where T
     l.nodes == r.nodes && l.edges == r.edges
 end
 
-function Base.iterate(edges::Edges{T}, state = 1) where T
+function Base.iterate(edges::WTEdges{T}, state = 1) where T
     iterate(edges.list, state)
 end
 
-function Base.length(edges::Edges{T}) where T
+function Base.length(edges::WTEdges{T}) where T
     length(edges.list)
 end
 
-function Base.push!(edges::Edges{T}, edge::Edge{T}) where T
+function Base.push!(edges::WTEdges{T}, edge::WTEdge{T}) where T
     push!(edges.list, edge)
 end
 
-function Base.empty(::Edges{T}) where T
-    Edges{T}([])
+function Base.empty(::WTEdges{T}) where T
+    WTEdges{T}([])
 end
 
-function Base.empty!(edges::Edges{T}) where T
+function Base.empty!(edges::WTEdges{T}) where T
     empty!(edges.list)
 end
 
 """
-    add_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+    add_edges(g::WTGraph{T}, edge::WTEdge{T})::WTGraph{T} where T
 """
-function add_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
-    add_edges(g, Edges([edge], isunique=true))
+function add_edges(g::WTGraph{T}, edge::WTEdge{T})::WTGraph{T} where T
+    add_edges(g, WTEdges([edge], isunique=true))
 end
 
 """
-    add_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+    add_edges(g::WTGraph{T}, edges::WTEdges{T})::WTGraph{T} where T
 """
-function add_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
-    list = Vector{Edge{T}}(g.edges.list)
+function add_edges(g::WTGraph{T}, edges::WTEdges{T})::WTGraph{T} where T
+    list = Vector{WTEdge{T}}(g.edges.list)
     nodes = Set{T}(g.nodes)
     @inbounds for edge in edges.list
         if !(edge in g.edges.list)
@@ -268,22 +268,22 @@ function add_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
             push!(nodes, edge.nodes...)
         end
     end
-    concatedges = Edges(list, isunique=true)
-    Graph{T}(nodes, concatedges)
+    concatedges = WTEdges(list, isunique=true)
+    WTGraph{T}(nodes, concatedges)
 end
 
 """
-    add_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
+    add_edges!(callback, g::WTGraph{T}, edge::WTEdge{T}) where T
 """
-function add_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
-    add_edges!(callback, g, Edges([edge], isunique=true))
+function add_edges!(callback, g::WTGraph{T}, edge::WTEdge{T}) where T
+    add_edges!(callback, g, WTEdges([edge], isunique=true))
 end
 
 """
-    add_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
+    add_edges!(callback, g::WTGraph{T}, edges::WTEdges{T}) where T
 """
-function add_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
-    list = Vector{Edge{T}}()
+function add_edges!(callback, g::WTGraph{T}, edges::WTEdges{T}) where T
+    list = Vector{WTEdge{T}}()
     nodes = Set{T}()
     @inbounds for edge in edges.list
         if !(edge in g.edges.list)
@@ -299,32 +299,32 @@ function add_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
 end
 
 """
-    remove_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
+    remove_edges(g::WTGraph{T}, edge::WTEdge{T})::WTGraph{T} where T
 """
-function remove_edges(g::Graph{T}, edge::Edge{T})::Graph{T} where T
-    remove_edges(g, Edges([edge], isunique=true))
+function remove_edges(g::WTGraph{T}, edge::WTEdge{T})::WTGraph{T} where T
+    remove_edges(g, WTEdges([edge], isunique=true))
 end
 
 """
-    remove_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+    remove_edges(g::WTGraph{T}, edges::WTEdges{T})::WTGraph{T} where T
 """
-function remove_edges(g::Graph{T}, edges::Edges{T})::Graph{T} where T
+function remove_edges(g::WTGraph{T}, edges::WTEdges{T})::WTGraph{T} where T
     list = g.edges.list
     indices = filter(!isnothing, indexin(list, edges.list))
-    Graph{T}(g.nodes, Edges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
+    WTGraph{T}(g.nodes, WTEdges(g.edges.list[setdiff(1:length(list), indices)], isunique=true))
 end
 
 """
-    remove_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
+    remove_edges!(callback, g::WTGraph{T}, edge::WTEdge{T}) where T
 """
-function remove_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
-    remove_edges!(callback, g, Edges([edge], isunique=true))
+function remove_edges!(callback, g::WTGraph{T}, edge::WTEdge{T}) where T
+    remove_edges!(callback, g, WTEdges([edge], isunique=true))
 end
 
 """
-    remove_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
+    remove_edges!(callback, g::WTGraph{T}, edges::WTEdges{T}) where T
 """
-function remove_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
+function remove_edges!(callback, g::WTGraph{T}, edges::WTEdges{T}) where T
     indices = filter(!isnothing, indexin(g.edges.list, edges.list))
     if length(g.edges.list) != length(indices)
         list = g.edges.list[indices]
@@ -337,25 +337,25 @@ function remove_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
     end
 end
 
-function Base.isless(a::Node, b::Node)
+function Base.isless(a::WTNode, b::WTNode)
     a.id < b.id
 end
 
-function nodeof(edge::Edge{T}, ::typeof(first)) where T
+function nodeof(edge::WTEdge{T}, ::typeof(first)) where T
     edge.backward ? edge.nodes[2] : edge.nodes[1]
 end
 
-function nodeof(edge::Edge{T}, ::typeof(last)) where T
+function nodeof(edge::WTEdge{T}, ::typeof(last)) where T
     edge.backward ? edge.nodes[1] : edge.nodes[2]
 end
 
-function allnodes(edges::Edges{T})::Set{T} where T
+function allnodes(edges::WTEdges{T})::Set{T} where T
     Set{T}(vcat(map(edge -> collect(edge.nodes), edges.list)...))
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", graph::Graph{T}) where T
-    print(io, nameof(Graph), "{", nameof(T), "}(")
-    if graph.nodes isa Set{Node}
+function Base.show(io::IO, mime::MIME"text/plain", graph::WTGraph{T}) where T
+    print(io, nameof(WTGraph), "{", nameof(T), "}(")
+    if graph.nodes isa Set{WTNode}
         Base.show(io, mime, graph.nodes)
     else
         print(io, "Set([")
@@ -371,9 +371,9 @@ function Base.show(io::IO, mime::MIME"text/plain", graph::Graph{T}) where T
     print(io, ")")
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", edges::Edges{T}) where T
+function Base.show(io::IO, mime::MIME"text/plain", edges::WTEdges{T}) where T
     count = length(edges.list)
-    print(io, nameof(Edges), "{", nameof(T), "}([")
+    print(io, nameof(WTEdges), "{", nameof(T), "}([")
     @inbounds for (idx, edge) in enumerate(edges.list)
         Base.show(io, mime, edge)
         count != idx && print(io, ", ")
@@ -381,7 +381,7 @@ function Base.show(io::IO, mime::MIME"text/plain", edges::Edges{T}) where T
     print(io, "])")
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
+function Base.show(io::IO, mime::MIME"text/plain", edge::WTEdge{T}) where T
     if edge.backward
         op, l, r = inverse(edge.op), last, first
     else
@@ -393,11 +393,11 @@ function Base.show(io::IO, mime::MIME"text/plain", edge::Edge{T}) where T
     Base.show(ioctx, mime, r(edge.nodes))
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", node::Node)
+function Base.show(io::IO, mime::MIME"text/plain", node::WTNode)
     print(io, node.id)
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", nodes::Set{Node})
+function Base.show(io::IO, mime::MIME"text/plain", nodes::Set{WTNode})
     count = length(nodes)
     print(io, nameof(Set), "([")
     @inbounds for (idx, node) in enumerate(sort(collect(nodes)))
@@ -411,7 +411,7 @@ end
 →(node::T) where T = Fix2(→, node)
 ←(node::T) where T = Fix2(←, node)
 
-function mapfilter(pred, f, itr::Vector{Edge{T}}, res::Vector{Edge{T}}) where T
+function mapfilter(pred, f, itr::Vector{WTEdge{T}}, res::Vector{WTEdge{T}}) where T
     @inbounds for edge in itr
         if is_directed(pred.f)
             if pred.f === edge.op
@@ -432,28 +432,28 @@ function mapfilter(pred, f, itr::Vector{Edge{T}}, res::Vector{Edge{T}}) where T
     res
 end
 
-function Base.filter(f::Fix2, list::Vector{Edge{T}}) where T
+function Base.filter(f::Fix2, list::Vector{WTEdge{T}}) where T
     mapfilter(f, push!, list, empty(list))
 end
 
-function Base.filter(f::Fix2, edges::Edges{T}) where T
-    Edges{T}(mapfilter(f, push!, edges.list, empty(edges.list)))
+function Base.filter(f::Fix2, edges::WTEdges{T}) where T
+    WTEdges{T}(mapfilter(f, push!, edges.list, empty(edges.list)))
 end
 
-function Base.replace(graph::Graph{GT}, vertices::Vector{T})::Graph{T} where {GT, T}
+function Base.replace(graph::WTGraph{GT}, vertices::Vector{T})::WTGraph{T} where {GT, T}
     sortednodes = sort(collect(graph.nodes))
-    list = [Edge{T}(edge.op, tuple(vertices[indexin(edge.nodes, sortednodes)]...), edge.backward) for edge in graph.edges.list]
-    Graph{T}(Set{T}(vertices), Edges{T}(list))
+    list = [WTEdge{T}(edge.op, tuple(vertices[indexin(edge.nodes, sortednodes)]...), edge.backward) for edge in graph.edges.list]
+    WTGraph{T}(Set{T}(vertices), WTEdges{T}(list))
 end
 
-function Base.replace(graph::Graph{T}, pairs::Pair{T, T}...)::Graph{T} where T
+function Base.replace(graph::WTGraph{T}, pairs::Pair{T, T}...)::WTGraph{T} where T
     nodes = replace(graph.nodes, pairs...)
-    Graph{T}(nodes, replace(graph.edges, pairs...))
+    WTGraph{T}(nodes, replace(graph.edges, pairs...))
 end
 
-function Base.replace(edges::Edges{T}, pairs::Pair{T, T}...)::Edges{T} where T
-    list = [Edge{T}(edge.op, tuple(replace(collect(edge.nodes), pairs...)...), edge.backward) for edge in edges.list]
-    Edges{T}(list)
+function Base.replace(edges::WTEdges{T}, pairs::Pair{T, T}...)::WTEdges{T} where T
+    list = [WTEdge{T}(edge.op, tuple(replace(collect(edge.nodes), pairs...)...), edge.backward) for edge in edges.list]
+    WTEdges{T}(list)
 end
 
 # module Tutte.Graphs
