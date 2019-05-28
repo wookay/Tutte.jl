@@ -1,27 +1,27 @@
 # Graphs
 
-### Graph
+### WTGraph
 ```@docs
-Graphs.Graph
-Graphs.add_edges(g::Graph{T}, edge::Edge{T}) where T
-Graphs.add_edges(g::Graph{T}, edges::Edges{T}) where T
-Graphs.add_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
-Graphs.add_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
-Graphs.remove_edges(g::Graph{T}, edge::Edge{T}) where T
-Graphs.remove_edges(g::Graph{T}, edges::Edges{T}) where T
-Graphs.remove_edges!(callback, g::Graph{T}, edge::Edge{T}) where T
-Graphs.remove_edges!(callback, g::Graph{T}, edges::Edges{T}) where T
+Graphs.WTGraph
+Graphs.add_edges(g::WTGraph{T}, edge::WTEdge{T}) where T
+Graphs.add_edges(g::WTGraph{T}, edges::WTEdges{T}) where T
+Graphs.add_edges!(callback, g::WTGraph{T}, edge::WTEdge{T}) where T
+Graphs.add_edges!(callback, g::WTGraph{T}, edges::WTEdges{T}) where T
+Graphs.remove_edges(g::WTGraph{T}, edge::WTEdge{T}) where T
+Graphs.remove_edges(g::WTGraph{T}, edges::WTEdges{T}) where T
+Graphs.remove_edges!(callback, g::WTGraph{T}, edge::WTEdge{T}) where T
+Graphs.remove_edges!(callback, g::WTGraph{T}, edges::WTEdges{T}) where T
 ```
 
-### Edges
+### WTEdges
 ```@docs
-Graphs.Edges
-Graphs.union(args::Union{Edge{T}, Edges{T}}...) where T
+Graphs.WTEdges
+Graphs.union(args::Union{WTEdge{T}, WTEdges{T}}...) where T
 ```
 
-### Edge
+### WTEdge
 ```@docs
-Graphs.Edge
+Graphs.WTEdge
 Graphs.:⇿
 Graphs.:→
 Graphs.:←
@@ -29,9 +29,9 @@ Graphs.:⇄
 Graphs.:⇆
 ```
 
-### Node
+### WTNode
 ```@docs
-Graphs.Node
+Graphs.WTNode
 Graphs.@nodes
 ```
 
@@ -39,6 +39,6 @@ Graphs.@nodes
 ```@docs
 Graphs.Weighted
 Graphs.add_edges!(callback, w::Weighted{T, WT}, arg::Array{Any, 2}) where {T, WT}
-Graphs.remove_edges!(callback, w::Weighted{T, WT}, edge::Edge{T}) where {T, WT}
-Graphs.remove_edges!(callback, w::Weighted{T, WT}, edges::Edges{T}) where {T, WT}
+Graphs.remove_edges!(callback, w::Weighted{T, WT}, edge::WTEdge{T}) where {T, WT}
+Graphs.remove_edges!(callback, w::Weighted{T, WT}, edges::WTEdges{T}) where {T, WT}
 ```

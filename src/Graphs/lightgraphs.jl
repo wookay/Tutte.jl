@@ -3,7 +3,7 @@
 using LightGraphs.SimpleGraphs: SimpleGraphs, SimpleGraph, SimpleDiGraph, LGFormat
 
 # SimpleGraph
-function simplegraph_nodes(vertices::Vector{T}, edges::Edges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+function simplegraph_nodes(vertices::Vector{T}, edges::WTEdges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
     r = SimpleGraph(length(vertices))
     for edge in edges.list
         SimpleGraphs.add_edge!(r, indexin(edge.nodes, vertices)...)
@@ -11,17 +11,17 @@ function simplegraph_nodes(vertices::Vector{T}, edges::Edges{T})::Tuple{SimpleGr
     (r, vertices)
 end
 
-function simplegraph_nodes(edges::Edges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+function simplegraph_nodes(edges::WTEdges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
     vertices = sort(collect(allnodes(edges)))
     simplegraph_nodes(vertices, edges)
 end
 
-function simplegraph_nodes(g::Graph{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+function simplegraph_nodes(g::WTGraph{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
     simplegraph_nodes(g.edges)
 end
 
 # SimpleDiGraph
-function simpledigraph_nodes(vertices::Vector{T}, edges::Edges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+function simpledigraph_nodes(vertices::Vector{T}, edges::WTEdges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
     r = SimpleDiGraph(length(vertices))
     for edge in edges.list
         SimpleGraphs.add_edge!(r, indexin(edge.nodes, vertices)...)
@@ -29,49 +29,49 @@ function simpledigraph_nodes(vertices::Vector{T}, edges::Edges{T})::Tuple{Simple
     (r, vertices)
 end
 
-function simpledigraph_nodes(edges::Edges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+function simpledigraph_nodes(edges::WTEdges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
     vertices = sort(collect(allnodes(edges)))
     simpledigraph_nodes(vertices, edges)
 end
 
-function simpledigraph_nodes(g::Graph{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+function simpledigraph_nodes(g::WTGraph{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
     simpledigraph_nodes(g.edges)
 end
 
-# Graph{T}
-function Graph{T}(sg::SimpleGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
-    Graph{T}(Set{T}(nodes), Edges([Edge(⇿, (nodes[edge.src], nodes[edge.dst]), false) for edge in SimpleGraphs.edges(sg)]))
+# WTGraph{T}
+function WTGraph{T}(sg::SimpleGraph{ST}, nodes::Vector{T})::WTGraph{T} where {T, ST}
+    WTGraph{T}(Set{T}(nodes), WTEdges([WTEdge(⇿, (nodes[edge.src], nodes[edge.dst]), false) for edge in SimpleGraphs.edges(sg)]))
 end
 
-function Graph(sg::SimpleGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
-    Graph{T}(sg, nodes)
+function WTGraph(sg::SimpleGraph{ST}, nodes::Vector{T})::WTGraph{T} where {T, ST}
+    WTGraph{T}(sg, nodes)
 end
 
-function Graph{T}(sg::SimpleGraph{ST})::Graph{T} where {T, ST}
-    Graph{T}(sg, Vector{T}(SimpleGraphs.vertices(sg)))
+function WTGraph{T}(sg::SimpleGraph{ST})::WTGraph{T} where {T, ST}
+    WTGraph{T}(sg, Vector{T}(SimpleGraphs.vertices(sg)))
 end
 
-function Graph(sg::SimpleGraph{T})::Graph{T} where T
-    Graph{T}(sg)
+function WTGraph(sg::SimpleGraph{T})::WTGraph{T} where T
+    WTGraph{T}(sg)
 end
 
-function Graph{T}(sg::SimpleDiGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
-    Graph{T}(Set{T}(nodes), Edges([Edge(→, (nodes[edge.src], nodes[edge.dst]), false) for edge in SimpleGraphs.edges(sg)]))
+function WTGraph{T}(sg::SimpleDiGraph{ST}, nodes::Vector{T})::WTGraph{T} where {T, ST}
+    WTGraph{T}(Set{T}(nodes), WTEdges([WTEdge(→, (nodes[edge.src], nodes[edge.dst]), false) for edge in SimpleGraphs.edges(sg)]))
 end
 
-function Graph{T}(sg::SimpleDiGraph{ST})::Graph{T} where {T, ST}
-    Graph{T}(sg, Vector{T}(SimpleGraphs.vertices(sg)))
+function WTGraph{T}(sg::SimpleDiGraph{ST})::WTGraph{T} where {T, ST}
+    WTGraph{T}(sg, Vector{T}(SimpleGraphs.vertices(sg)))
 end
 
-function Graph(sg::SimpleDiGraph{ST}, nodes::Vector{T})::Graph{T} where {T, ST}
-    Graph{T}(sg, nodes)
+function WTGraph(sg::SimpleDiGraph{ST}, nodes::Vector{T})::WTGraph{T} where {T, ST}
+    WTGraph{T}(sg, nodes)
 end
 
-function Graph(sg::SimpleDiGraph{T})::Graph{T} where T
-    Graph{T}(sg)
+function WTGraph(sg::SimpleDiGraph{T})::WTGraph{T} where T
+    WTGraph{T}(sg)
 end
 
-function savegraph(io::IO, g::AbstractGraph)
+function savegraph(io::IO, g::AbstractGraph{T}) where T
     SimpleGraphs.savegraph(io, g, LGFormat())
 end
 

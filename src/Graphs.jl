@@ -1,6 +1,6 @@
 module Graphs # Tutte
 
-export Graph, Edge, Edges, Node, @nodes, ⇿, →, ←, ⇄, ⇆, add_edges, remove_edges, add_edges!, remove_edges!
+export WTGraph, WTEdge, WTEdges, WTNode, @nodes, ⇿, →, ←, ⇄, ⇆, add_edges, remove_edges, add_edges!, remove_edges!
 include("Graphs/graphs.jl")
 
 export Weighted
