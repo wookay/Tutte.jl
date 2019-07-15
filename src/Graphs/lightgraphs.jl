@@ -2,39 +2,39 @@
 
 using LightGraphs.SimpleGraphs: SimpleGraphs, SimpleGraph, SimpleDiGraph, LGFormat
 
-# SimpleGraph
-function simplegraph_nodes(vertices::Vector{T}, edges::WTEdges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
-    r = SimpleGraph(length(vertices))
+# SimpleGraph{<:Integer}
+function simplegraph_nodes(vertices::Vector{NT}, edges::WTEdges{NT})::Tuple{SimpleGraph{<:Integer}, Vector{NT}} where NT
+    r = SimpleGraph{<:Integer}(length(vertices))
     for edge in edges.list
         SimpleGraphs.add_edge!(r, indexin(edge.nodes, vertices)...)
     end
     (r, vertices)
 end
 
-function simplegraph_nodes(edges::WTEdges{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+function simplegraph_nodes(edges::WTEdges{NT})::Tuple{SimpleGraph{<:Integer}, Vector{NT}} where NT
     vertices = sort(collect(allnodes(edges)))
     simplegraph_nodes(vertices, edges)
 end
 
-function simplegraph_nodes(g::WTGraph{T})::Tuple{SimpleGraph{Int}, Vector{T}} where T
+function simplegraph_nodes(g::WTGraph{NT})::Tuple{SimpleGraph{<:Integer}, Vector{NT}} where NT
     simplegraph_nodes(g.edges)
 end
 
-# SimpleDiGraph
-function simpledigraph_nodes(vertices::Vector{T}, edges::WTEdges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
-    r = SimpleDiGraph(length(vertices))
+# SimpleDiGraph{<:Integer}
+function simpledigraph_nodes(vertices::Vector{NT}, edges::WTEdges{NT})::Tuple{SimpleDiGraph{<:Integer}, Vector{NT}} where NT
+    r = SimpleDiGraph{<:Integer}(length(vertices))
     for edge in edges.list
         SimpleGraphs.add_edge!(r, indexin(edge.nodes, vertices)...)
     end
     (r, vertices)
 end
 
-function simpledigraph_nodes(edges::WTEdges{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+function simpledigraph_nodes(edges::WTEdges{NT})::Tuple{SimpleDiGraph{<:Integer}, Vector{NT}} where NT
     vertices = sort(collect(allnodes(edges)))
     simpledigraph_nodes(vertices, edges)
 end
 
-function simpledigraph_nodes(g::WTGraph{T})::Tuple{SimpleDiGraph{Int}, Vector{T}} where T
+function simpledigraph_nodes(g::WTGraph{NT})::Tuple{SimpleDiGraph{<:Integer}, Vector{NT}} where NT
     simpledigraph_nodes(g.edges)
 end
 

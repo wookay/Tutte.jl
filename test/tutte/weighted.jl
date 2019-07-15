@@ -1,13 +1,24 @@
-module test_tutte_weighted
+using Jive
+@useinside module test_tutte_weighted
 
 using Test
 using Tutte.Graphs # Weighted WTNode @nodes → ← ⇿ ⇄  ⇆
+using .Graphs: simpleweightedgraph_nodes, simpleweighteddigraph_nodes
 
 @nodes A B C D E F G
 
 w1 = Weighted([A 5→ C 2→ F 1→ G], [A 3→ D 4→ F], [B 9→ D 8→ G], [B 6→ E 4→ G])
 @test w1.graph.edges.list == [A → C, C → F, F → G, A → D, D → F, B → D, D → G, B → E, E → G]
 @test w1.weights == [5, 2, 1, 3, 4, 9, 8, 6, 4]
+ug, nodes = simpleweightedgraph_nodes(w1)
+@test ug.weights[1,3] == 5
+@test ug.weights[3,1] == 5
+@test nodes[1] === A
+@test nodes[3] === C
+
+dg, nodes = simpleweighteddigraph_nodes(w1)
+@test dg.weights[1,3] == 0
+@test dg.weights[3,1] == 5
 
 w2 = Weighted([A 5⇿ C 2⇿ F 1⇿ G], [A 3⇿ D 4⇿ F], [B 9⇿ D 8⇿ G], [B 6⇿ E 4⇿ G])
 @test w2.graph.edges.list == [A ⇿ C, C ⇿ F, F ⇿ G, A ⇿ D, D ⇿ F, B ⇿ D, D ⇿ G, B ⇿ E, E ⇿ G]

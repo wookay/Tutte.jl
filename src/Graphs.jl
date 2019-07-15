@@ -7,5 +7,6 @@ export Weighted
 include("Graphs/weighted.jl")
 
 include("Graphs/lightgraphs.jl")
+include("Graphs/simpleweightedgraphs.jl")
 
 end # module Tutte.Graphs
