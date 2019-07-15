@@ -38,4 +38,32 @@ function simpleweighteddigraph_nodes(w::Weighted{NT,W})::Tuple{SimpleWeightedDiG
     simpleweighteddigraph_nodes(w.graph.edges, w.weights)
 end
 
+# Weighted{T,W}
+function _build_weighted(wg::Union{SimpleWeightedGraph{<:Integer,W}, SimpleWeightedDiGraph{<:Integer,W}}, nodes::Vector{T}, op) where {T, W}
+    edges = WTEdge{T}[]
+    weights = W[]
+    for edge in SimpleWeightedGraphs.edges(wg)
+        push!(edges, WTEdge{T}(op, (nodes[edge.src], nodes[edge.dst]), false))
+        push!(weights, edge.weight)
+    end
+    graph = WTGraph{T}(Set{T}(nodes), WTEdges{T}(edges))
+    Weighted{T,W}(graph, weights)
+end
+
+function Weighted{T,W}(wg::SimpleWeightedGraph{<:Integer,W}, nodes::Vector{T}) where {T, W}
+    _build_weighted(wg, nodes, ⇿)
+end
+
+function Weighted(wg::SimpleWeightedGraph{<:Integer,W}, nodes::Vector{T}) where {T, W}
+    Weighted{T,W}(wg, nodes)
+end
+
+function Weighted{T,W}(wg::SimpleWeightedDiGraph{<:Integer,W}, nodes::Vector{T}) where {T, W}
+    _build_weighted(wg, nodes, →)
+end
+
+function Weighted(wg::SimpleWeightedDiGraph{<:Integer,W}, nodes::Vector{T}) where {T, W}
+    Weighted{T,W}(wg, nodes)
+end
+
 # module Tutte.Graphs
